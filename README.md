@@ -43,6 +43,7 @@ CREATE TABLE wishlist (
 	id VARCHAR(50) NOT NULL,
 	user_id VARCHAR(50) NOT NULL,
 	wishlist_name VARCHAR(15) NOT NULL,
+	wishlist_target NUMERIC(15,2) NOT NULL,
 	progress INT NOT NULL,
 	
 	PRIMARY KEY(id),
