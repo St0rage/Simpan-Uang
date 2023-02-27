@@ -12,8 +12,8 @@ CREATE TABLE users (
 	name VARCHAR(50) NOT NULL,
 	email VARCHAR(50) NOT NULL,
 	password CHAR(76) NOT NULL,
-	is_admin BOOL,
-
+	is_admin BOOL NOT NULL,
+	
 	PRIMARY KEY(id)
 );
 
@@ -21,8 +21,8 @@ CREATE TABLE piggy_bank (
 	id VARCHAR(50) NOT NULL,
 	user_id VARCHAR(50) NOT NULL,
 	piggy_bank_name VARCHAR(15) NOT NULL,
-	type BOOL,
-
+	type BOOL NOT NULL,
+	
 	PRIMARY KEY(id),
 	FOREIGN KEY(user_id) REFERENCES users(id)
 );
@@ -32,33 +32,33 @@ CREATE TABLE piggy_bank_transaction (
 	piggy_bank_id VARCHAR(50) NOT NULL,
 	transaction_name VARCHAR(15) NOT NULL,
 	amount NUMERIC(15, 2),
-	status BOOL,
-	date INT,
-
+	status BOOL NOT NULL,
+	date INT NOT NULL,
+	
 	PRIMARY KEY(id),
 	FOREIGN KEY(piggy_bank_id) REFERENCES piggy_bank(id) ON DELETE CASCADE
 );
 
-CREATE TABLE whislist (
+CREATE TABLE wishlist (
 	id VARCHAR(50) NOT NULL,
 	user_id VARCHAR(50) NOT NULL,
-	whislist_name VARCHAR(15) NOT NULL,
-	progress INT,
-
+	wishlist_name VARCHAR(15) NOT NULL,
+	progress INT NOT NULL,
+	
 	PRIMARY KEY(id),
 	FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
-CREATE TABLE whislist_transaction (
+CREATE TABLE wishlist_transaction (
 	id VARCHAR(50) NOT NULL,
-	whislist_id VARCHAR(50) NOT NULL,
+	wishlist_id VARCHAR(50) NOT NULL,
 	transaction_name VARCHAR(15) NOT NULL,
 	amount NUMERIC(15, 2),
-	status BOOL,
-	date INT,
-
+	status BOOL NOT NULL,
+	date INT NOT NULL,
+	
 	PRIMARY KEY(id),
-	FOREIGN KEY(whislist_id) REFERENCES whislist(id) ON DELETE CASCADE
+	FOREIGN KEY(wishlist_id) REFERENCES wishlist(id) ON DELETE CASCADE
 );
 ```
 
