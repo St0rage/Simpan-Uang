@@ -26,6 +26,17 @@ func (wc *WishlistController) GetWishlist(ctx *gin.Context) {
 	}
 }
 
+// func (wc *WishlistController) GetWishlistById(ctx *gin.Context) {
+// 	Id := fmt.Sprintf("%v", ctx.MustGet("id"))
+
+// 	wishlist, err := wc.service.GetWishlistById(Id)
+// 	if err != nil {
+// 		utils.HandleInternalServerError(ctx)
+// 	} else {
+// 		utils.HandleSuccess(ctx, wishlist)
+// 	}
+// }
+
 func (wc *WishlistController) CreateNewWishlist(ctx *gin.Context) {
 	Userid := fmt.Sprintf("%v", ctx.MustGet("id"))
 	var wishlist *web.WishlistRequest
@@ -33,8 +44,14 @@ func (wc *WishlistController) CreateNewWishlist(ctx *gin.Context) {
 	if err != nil {
 		utils.HandleInternalServerError(ctx)
 	} else {
-		wc.service.CreateNewWishlist(Userid,wishlist)
-		utils.HandleSuccessCreated(ctx, wishlist)
+		err := wc.service.CreateNewWishlist(Userid, wishlist)
+		if err != nil {
+			utils.HandleBadRequest(ctx, map[string]string{
+				"message": err.Error(),
+			})
+		} else {
+			utils.HandleSuccessCreated(ctx, wishlist)
+		}
 	}
 }
 
@@ -107,6 +124,7 @@ func NewWishlistController(r *gin.Engine, service service.WishlistService, authM
 
 	wishlistRouteGroup := controller.router.Group("/api/wishlist", authMdw.RequireToken())
 	wishlistRouteGroup.GET("/", controller.GetWishlist)
+	// wishlistRouteGroup.GET("/{wishlistId}", controller.GetWishlistById)
 	wishlistRouteGroup.POST("/create", controller.CreateNewWishlist)
 	return &controller
 }
