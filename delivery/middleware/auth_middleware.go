@@ -60,5 +60,4 @@ func (auth *authMiddleware) RequireToken() gin.HandlerFunc {
 			return
 		}
 	}
-
 }

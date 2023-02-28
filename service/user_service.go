@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"math/rand"
 	"strconv"
 
@@ -14,10 +15,13 @@ import (
 )
 
 type UserService interface {
-	GetUser(userId string) (web.UserResponse, error)
-	Register(newUser *domain.User) error
+	GetUser(userId string) web.UserResponse
+	Register(newUser *web.UserRegisterRequest) error
 	Login(loginRequest *web.UserLoginRequest) (string, error)
 	ForgotPassword(resetRequest *web.UserResetRequest) error
+	ChangePassword(userId string, changePasswordRequest *web.UserChangePasswordRequest)
+	UpdateUser(userId string, userUpdateRequest *web.UserUpdateRequest) error
+	CheckAdmin(userId string) bool
 }
 
 type userService struct {
@@ -26,33 +30,41 @@ type userService struct {
 	mailServ  mailer.MailService
 }
 
-func (userService *userService) GetUser(userId string) (web.UserResponse, error) {
+func (userService *userService) GetUser(userId string) web.UserResponse {
 	var userResponse web.UserResponse
-	user, err := userService.userRepo.FindById(userId)
-	if err != nil {
-		return userResponse, err
-	}
+	user := userService.userRepo.FindById(userId)
 
 	userResponse.Id = user.Id
 	userResponse.Name = user.Name
 	userResponse.Email = user.Email
+	userResponse.IsAdmin = user.IsAdmin
+	userResponse.Balance = 0
 
-	return userResponse, nil
+	return userResponse
 }
 
-func (userService *userService) Register(newUser *domain.User) error {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), 14)
-	if err != nil {
-		return err
+func (userService *userService) Register(newUser *web.UserRegisterRequest) error {
+	emailExist := userService.userRepo.CheckEmail(newUser.Email)
+	if emailExist {
+		return errors.New("email sudah digunakan")
 	}
 
-	newUser.Id = utils.GenerateId()
-	newUser.Password = string(bytes)
-
-	err = userService.userRepo.Save(newUser)
-	if err != nil {
-		return err
+	var user domain.User
+	adminExist := userService.userRepo.CheckAdmin()
+	if adminExist {
+		user.IsAdmin = false
+	} else {
+		user.IsAdmin = true
 	}
+
+	bytes, _ := bcrypt.GenerateFromPassword([]byte(newUser.Password), 14)
+
+	user.Id = utils.GenerateId()
+	user.Name = newUser.Name
+	user.Email = newUser.Email
+	user.Password = string(bytes)
+
+	userService.userRepo.Save(&user)
 
 	return nil
 }
@@ -60,7 +72,7 @@ func (userService *userService) Register(newUser *domain.User) error {
 func (userService *userService) Login(loginRequest *web.UserLoginRequest) (string, error) {
 	user, err := userService.userRepo.FindByEmail(loginRequest.Email)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password))
@@ -87,14 +99,46 @@ func (userService *userService) ForgotPassword(resetRequest *web.UserResetReques
 
 	user.Password = string(password)
 
-	_ = userService.userRepo.UpdatePassword(&user)
+	userService.userRepo.UpdatePassword(&user)
 
 	err = userService.mailServ.ResetPasswordMail(user.Email, generatePassword)
 	if err != nil {
 		panic(err)
 	}
+	return nil
+}
+
+func (userService *userService) ChangePassword(userId string, changePasswordRequest *web.UserChangePasswordRequest) {
+	user := userService.userRepo.FindById(userId)
+
+	bytes, _ := bcrypt.GenerateFromPassword([]byte(changePasswordRequest.Password), 14)
+
+	user.Password = string(bytes)
+
+	userService.userRepo.UpdatePassword(&user)
+}
+
+func (userService *userService) UpdateUser(userId string, userUpdateRequest *web.UserUpdateRequest) error {
+	user := userService.userRepo.FindById(userId)
+
+	if userUpdateRequest.Email != user.Email {
+		exist := userService.userRepo.CheckEmail(userUpdateRequest.Email)
+		if exist {
+			return errors.New("email sudah digunakan")
+		} else {
+			user.Email = userUpdateRequest.Email
+		}
+	}
+
+	user.Name = userUpdateRequest.Name
+
+	userService.userRepo.Update(&user)
 
 	return nil
+}
+
+func (userService *userService) CheckAdmin(userId string) bool {
+	return userService.userRepo.IsAdmin(userId)
 }
 
 func NewUserService(userRepo repository.UserRepository, tokenServ authenticator.AccessToken, mailServ mailer.MailService) UserService {

@@ -1,0 +1,1182 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Simpan Uang Restful API",
+    "version": "1",
+    "description": "Restful API Documentation for Simpan Uang"
+  },
+  "servers": [
+    {
+      "url": "https://localhost:3000/api"
+    }
+  ],
+  "paths": {
+    "/user": {
+      "get": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["User"],
+        "summary": "Get User",
+        "description": "Get user detail",
+        "responses": {
+          "200": {
+            "description": "Success get user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "is_admin": {
+                          "type": "boolean"
+                        },
+                        "balance": {
+                          "type": "integer",
+                          "format": "int32"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/register": {
+      "post": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["User"],
+        "summary": "Register User",
+        "description": "User registration",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "password_confirmation": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success user registration",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/login": {
+      "post": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["User"],
+        "summary": "User Login",
+        "description": "User login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success Login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        },
+                        "token": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/forgot-password": {
+      "post": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["User"],
+        "summary": "User Forgot Password (only user admin)",
+        "description": "Sending generate new password to user email by user admin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success Reset Password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/change-password": {
+      "put": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["User"],
+        "summary": "User Change Password",
+        "description": "User change password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  },
+                  "password_confirmation": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success change password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/update": {
+      "put": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["User"],
+        "summary": "Update User Name or Email",
+        "description": "Update user name or email",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success update user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/piggy-bank": {
+      "get": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Piggy Bank"],
+        "summary": "Get Piggy Banks",
+        "description": "Get all piggy banks by user id from token",
+        "responses": {
+          "200": {
+            "description": "Success get all piggy banks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/PiggyBankList"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/piggy-bank/{piggyBankId}": {
+      "get": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Piggy Bank"],
+        "summary": "Get Piggy Bank by Id",
+        "description": "Get piggy bank by id if piggy bank user_id same as user_id in token",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/piggyBankId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success Get Piggy Bank by Id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/PiggyBank"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/piggy-bank/{piggyBankId}/transactions": {
+      "get": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Piggy Bank"],
+        "summary": "Get Piggy Bank Transactions by Piggy Bank Id",
+        "description": "Get piggy bank transactions by piggy bank id if piggy bank user_id same as user_id in token",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/piggyBankId"
+          },
+          {
+            "$ref": "#/components/parameters/size"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success Get Piggy Bank Transactions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "piggy_bank_id": {
+                            "type": "string"
+                          },
+                          "transcation_name": {
+                            "type": "string"
+                          },
+                          "amount": {
+                            "type": "number"
+                          },
+                          "status": {
+                            "type": "boolean"
+                          },
+                          "date": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/piggy-bank/create": {
+      "post": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Piggy Bank"],
+        "summary": "Create New Piggy Bank",
+        "description": "Create new piggy bank for user_id from token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrUpdatePiggyBank"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success Create New Piggy Bank",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/piggy-bank/{piggyBankId}/transactions/deposit": {
+      "post": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Piggy Bank"],
+        "summary": "Create Deposit Transcation to Piggy Bank",
+        "description": "Create deposit transaction to piggy bank by piggy bank id",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/piggyBankId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepositOrWithdraw"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success Deposit Transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/piggy-bank/{piggyBankId}/transactions/withdraw": {
+      "post": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Piggy Bank"],
+        "summary": "Create Withdraw Transaction to Piggy Bank",
+        "description": "Create withdraw transaction to piggy bank by piggy bank id",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/piggyBankId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepositOrWithdraw"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success Withdraw Transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/piggy-bank/{piggyBankId}/update": {
+      "put": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Piggy Bank"],
+        "summary": "Update Piggy Bank",
+        "description": "Update piggy bank",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/piggyBankId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrUpdatePiggyBank"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success Update Piggy Bank",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/piggy-bank/{piggyBankId}/delete": {
+      "delete": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Piggy Bank"],
+        "summary": "Delete Piggy Bank",
+        "description": "Delete piggy bank and if piggy bank have total > 0, then the total will be transferred to main piggy bank",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/piggyBankId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success Delete Piggy Bank",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/piggy-bank/{piggyBankId}/transactions/{piggyBankTranscationId}/delete": {
+      "delete": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Piggy Bank"],
+        "summary": "Delete Piggy Bank Transaction",
+        "description": "Delete piggy bank transcation and can only delete on the last transaction",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/piggyBankId"
+          },
+          {
+            "$ref": "#/components/parameters/piggBankTransactionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succes Delete Piggy Bank Transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wishlist": {
+      "get": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Wishlist"],
+        "summary": "Get Wishlists",
+        "description": "Get all wishlists by user id from token",
+        "responses": {
+          "200": {
+            "description": "Success get all wishlists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Wishlists"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wishlist/{wishlistId}": {
+      "get": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Wishlist"],
+        "summary": "Get Wishlist by Id",
+        "description": "Get wishlist by id if wishlist user_id same as user_id in token",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wishlistId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success Get Wishlist by Id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Wishlist"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wishlist/{wishlistId}/transactions": {
+      "get": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Wishlist"],
+        "summary": "Get Wishlist Transactions by Wishlist Id",
+        "description": "Get wishlist transactions by wishlist_id if wishlist user_id same as user_id in token",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wishlistId"
+          },
+          {
+            "$ref": "#/components/parameters/size"
+          },
+          {
+            "$ref": "#/components/parameters/page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success Get Wishlist Transactions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "wishlist_id": {
+                            "type": "string"
+                          },
+                          "transcation_name": {
+                            "type": "string"
+                          },
+                          "amount": {
+                            "type": "number"
+                          },
+                          "status": {
+                            "type": "boolean"
+                          },
+                          "date": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wishlist/create": {
+      "post": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Wishlist"],
+        "summary": "Create New Wishlist",
+        "description": "Create new wishlist for user_id from token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrUpdateWishlist"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success Create New Wishlist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wishlist/{wishlistId}/transactions/deposit": {
+      "post": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Wishlist"],
+        "summary": "Create Deposit Transcation to Wishlist",
+        "description": "Create deposit transaction to wishlist_transaction by wishlist id",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wishlistId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepositOrWithdraw"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success Deposit Transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wishlist/{wishlistId}/transactions/withdraw": {
+      "post": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Wishlist"],
+        "summary": "Create Withdraw Transaction to Wishlist",
+        "description": "Create withdraw transaction to wishlist_transcation by wishlist id",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wishlistId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepositOrWithdraw"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success Withdraw Transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wishlist/{wishlistId}/update": {
+      "put": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Wishlist"],
+        "summary": "Update Wishlist",
+        "description": "Update Wishlist",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wishlistId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrUpdateWishlist"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success Update Wishlist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wishlist/{wishlistId}/delete": {
+      "delete": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Wishlist"],
+        "summary": "Delete Wishlist",
+        "description": "Delete wishlist and if wishlist have a total > 0, then the total will be transferred to main piggy bank",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wishlistId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success Delete Wishlist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wishlist/{wishlistId}/transactions/{wishlistTranscationId}/delete": {
+      "delete": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["Wishlist"],
+        "summary": "Delete Wishlist Transaction",
+        "description": "Delete wishlist transcation and can only delete on the last transaction",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/wishlistId"
+          },
+          {
+            "$ref": "#/components/parameters/wishlistTransactionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Succes Delete Wishlist Transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SimpanUangAuth": {
+        "description": "Auth for Simpan Uang Restful API",
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "parameters": {
+      "piggyBankId": {
+        "name": "piggyBankId",
+        "in": "path",
+        "required": true,
+        "description": "piggyBankId for get piggy bank detail and other",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "piggBankTransactionId": {
+        "name": "piggyBankTransactionId",
+        "in": "path",
+        "required": true,
+        "description": "piggyBankTransactionId for delete transcation",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "wishlistId": {
+        "name": "wishlistId",
+        "in": "path",
+        "required": true,
+        "description": "wishlistId for get wishlist detail and other",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "wishlistTransactionId": {
+        "name": "wishlistTransactionId",
+        "in": "path",
+        "required": true,
+        "description": "wishlistTransactionId for delete transcation",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "size": {
+        "name": "size",
+        "in": "query",
+        "required": false,
+        "description": "limit for pagination",
+        "schema": {
+          "type": "number"
+        }
+      },
+      "page": {
+        "name": "page",
+        "in": "query",
+        "required": true,
+        "description": "page for pagination",
+        "schema": {
+          "type": "number"
+        }
+      }
+    },
+    "schemas": {
+      "SucessMessage": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "PiggyBank": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "piggy_bank_name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "boolean"
+          },
+          "total": {
+            "type": "number"
+          }
+        }
+      },
+      "PiggyBankList": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/PiggyBank"
+        }
+      },
+      "CreateOrUpdatePiggyBank": {
+        "type": "object",
+        "properties": {
+          "piggy_bank_name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 15
+          }
+        }
+      },
+      "DepositOrWithdraw": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number"
+          }
+        }
+      },
+      "Wishlist": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "wishlist_name": {
+            "type": "string"
+          },
+          "wishlist_target": {
+            "type": "number"
+          },
+          "progress": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        }
+      },
+      "Wishlists": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Wishlist"
+        }
+      },
+      "CreateOrUpdateWishlist": {
+        "type": "object",
+        "properties": {
+          "wishlist_name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 15
+          }
+        }
+      }
+    }
+  }
+}

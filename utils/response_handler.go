@@ -62,5 +62,5 @@ func HandleUnauthorized(ctx *gin.Context) {
 		Code:   401,
 		Status: "UNAUTHORIZED",
 	}
-	ctx.JSON(http.StatusBadRequest, response)
+	ctx.JSON(http.StatusUnauthorized, response)
 }

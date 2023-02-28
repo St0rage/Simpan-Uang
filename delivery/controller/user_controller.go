@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/St0rage/Simpan-Uang/delivery/middleware"
-	"github.com/St0rage/Simpan-Uang/model/domain"
 	"github.com/St0rage/Simpan-Uang/model/web"
 	"github.com/St0rage/Simpan-Uang/service"
 	"github.com/St0rage/Simpan-Uang/utils"
@@ -19,23 +18,22 @@ type UserController struct {
 func (uc *UserController) getUser(ctx *gin.Context) {
 	id := fmt.Sprintf("%v", ctx.MustGet("id"))
 
-	user, err := uc.service.GetUser(id)
-	if err != nil {
-		utils.HandleInternalServerError(ctx)
-	} else {
-		utils.HandleSuccess(ctx, user)
-	}
+	user := uc.service.GetUser(id)
+
+	utils.HandleSuccess(ctx, user)
 }
 
 func (uc *UserController) registerUser(ctx *gin.Context) {
-	var user *domain.User
-	err := ctx.ShouldBindJSON(&user)
+	var newUserRequest *web.UserRegisterRequest
+	err := ctx.ShouldBindJSON(&newUserRequest)
 	if err != nil {
 		utils.HandleBadRequest(ctx, err.Error())
 	} else {
-		err := uc.service.Register(user)
+		err := uc.service.Register(newUserRequest)
 		if err != nil {
-			utils.HandleInternalServerError(ctx)
+			utils.HandleBadRequest(ctx, map[string]string{
+				"message": err.Error(),
+			})
 		} else {
 			utils.HandleSuccessCreated(ctx, map[string]string{
 				"message": "User berhasil dibuat",
@@ -57,29 +55,76 @@ func (uc *UserController) loginUser(ctx *gin.Context) {
 			})
 		} else {
 			utils.HandleSuccess(ctx, map[string]string{
-				"token": token,
+				"message": "Login Berhasil",
+				"token":   token,
 			})
 		}
 	}
 }
 
 func (uc *UserController) forgotPassword(ctx *gin.Context) {
-	var resetRequest *web.UserResetRequest
-	err := ctx.ShouldBindJSON(&resetRequest)
+	id := fmt.Sprintf("%v", ctx.MustGet("id"))
+
+	isAdmin := uc.service.CheckAdmin(id)
+
+	if !isAdmin {
+		utils.HandleUnauthorized(ctx)
+	} else {
+		var resetRequest *web.UserResetRequest
+		err := ctx.ShouldBindJSON(&resetRequest)
+		if err != nil {
+			utils.HandleBadRequest(ctx, err.Error())
+		} else {
+			err := uc.service.ForgotPassword(resetRequest)
+			if err != nil {
+				utils.HandleNotFound(ctx, map[string]string{
+					"message": "Email tidak ditemukan",
+				})
+			} else {
+				utils.HandleSuccess(ctx, map[string]string{
+					"message": "Berhasil reset password, cek email",
+				})
+			}
+		}
+	}
+
+}
+
+func (uc *UserController) changePassword(ctx *gin.Context) {
+	id := fmt.Sprintf("%v", ctx.MustGet("id"))
+	var changePasswordRequest *web.UserChangePasswordRequest
+
+	err := ctx.ShouldBindJSON(&changePasswordRequest)
 	if err != nil {
 		utils.HandleBadRequest(ctx, err.Error())
 	} else {
-		err := uc.service.ForgotPassword(resetRequest)
+		uc.service.ChangePassword(id, changePasswordRequest)
+		utils.HandleSuccess(ctx, map[string]string{
+			"message": "Password berhasil diubah",
+		})
+	}
+}
+
+func (uc *UserController) updateUser(ctx *gin.Context) {
+	id := fmt.Sprintf("%v", ctx.MustGet("id"))
+	var userUpdateRequest *web.UserUpdateRequest
+
+	err := ctx.ShouldBindJSON(&userUpdateRequest)
+	if err != nil {
+		utils.HandleBadRequest(ctx, err.Error())
+	} else {
+		err := uc.service.UpdateUser(id, userUpdateRequest)
 		if err != nil {
-			utils.HandleNotFound(ctx, map[string]string{
-				"message": "Email tidak ditemukan",
+			utils.HandleBadRequest(ctx, map[string]string{
+				"message": err.Error(),
 			})
 		} else {
 			utils.HandleSuccess(ctx, map[string]string{
-				"message": "Berhasil reset password, cek email anda",
+				"message": "User berhasil diupdate",
 			})
 		}
 	}
+
 }
 
 func NewUserController(r *gin.Engine, service service.UserService, authMdw middleware.AuthMiddleware) *UserController {
@@ -88,11 +133,14 @@ func NewUserController(r *gin.Engine, service service.UserService, authMdw middl
 		service: service,
 	}
 
+	r.Use(gin.Recovery())
 	userRouteGroup := controller.router.Group("/api/user")
 	userRouteGroup.GET("/", authMdw.RequireToken(), controller.getUser)
 	userRouteGroup.POST("/register", controller.registerUser)
 	userRouteGroup.POST("/login", controller.loginUser)
-	userRouteGroup.POST("/forgot-password", controller.forgotPassword)
+	userRouteGroup.POST("/forgot-password", authMdw.RequireToken(), controller.forgotPassword)
+	userRouteGroup.PUT("/change-password", authMdw.RequireToken(), controller.changePassword)
+	userRouteGroup.PUT("/update", authMdw.RequireToken(), controller.updateUser)
 
 	return &controller
 }
