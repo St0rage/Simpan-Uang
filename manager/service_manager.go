@@ -9,7 +9,7 @@ import (
 type ServiceManager interface {
 	UserService() service.UserService
 	// PiggyBankService
-	// WhislistService
+	WishlistService() service.WishlistService
 }
 
 type serviceManager struct {
@@ -23,7 +23,9 @@ func (s *serviceManager) UserService() service.UserService {
 }
 
 // PiggyBankService
-// WhislistService
+func (s *serviceManager) WishlistService() service.WishlistService {
+	return service.NewWishlistService(s.repoManager.WishlistRepo())
+}
 
 func NewServiceManager(repoManager RepositoryManager, tokenServ authenticator.AccessToken, mailServ mailer.MailService) ServiceManager {
 	return &serviceManager{
