@@ -4,7 +4,7 @@ import "github.com/St0rage/Simpan-Uang/repository"
 
 type RepositoryManager interface {
 	UserRepo() repository.UserRepository
-	// PiggyBankRepo
+	PiggyBankRepo() repository.PiggyBankRepository
 	// WhislistRepo
 }
 
@@ -16,7 +16,10 @@ func (repo *repositoryManager) UserRepo() repository.UserRepository {
 	return repository.NewUserRepository(repo.infra.DbConn())
 }
 
-// PiggyBankRepo()
+func (repo *repositoryManager) PiggyBankRepo() repository.PiggyBankRepository {
+	return repository.NewPiggyBankRepository(repo.infra.DbConn())
+}
+
 // WhislistRepo()
 
 func NewRepositoryManager(manager InfraManager) RepositoryManager {

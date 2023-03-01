@@ -13,7 +13,14 @@ const (
 	// END USER
 
 	// PIGGY BANK
-	// edit here
+	INSERT_PIGGY_BANK         = "INSERT INTO piggy_bank (id, user_id, piggy_bank_name, type) VALUES (:id, :user_id, :piggy_bank_name, :type)"
+	SELECT_PIGGY_BANK         = "SELECT * FROM piggy_bank WHERE user_id = $1"
+	SELECT_PIGGY_BANK_ID      = "SELECT * FROM piggy_bank WHERE id = $1"
+	UPDATE_PIGGY_BANK         = "UPDATE piggy_bank SET piggy_bank_name = :piggy_bank_name WHERE id = :id"
+	CHECK_MAIN_PIGGY_BANK     = "SELECT COUNT(*) FROM piggy_bank WHERE user_id = $1"
+	CHECK_PIGGY_BANK_NAME     = "SELECT COUNT(*) FROM piggy_bank WHERE piggy_bank_name = $1 AND user_id = $2"
+	SELECT_PIGGY_BANK_USER_ID = "SELECT user_id FROM piggy_bank WHERE id = $1"
+
 	// END PIGGY BANK
 
 	// WHISLIST
