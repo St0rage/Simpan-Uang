@@ -1,8 +1,10 @@
 package middleware
 
 import (
+	"fmt"
 	"strings"
 
+	"github.com/St0rage/Simpan-Uang/service"
 	"github.com/St0rage/Simpan-Uang/utils"
 	"github.com/St0rage/Simpan-Uang/utils/authenticator"
 	"github.com/gin-gonic/gin"
@@ -10,15 +12,18 @@ import (
 
 type AuthMiddleware interface {
 	RequireToken() gin.HandlerFunc
+	PiggyBankAuthorization() gin.HandlerFunc
 }
 
 type authMiddleware struct {
-	tokenServ authenticator.AccessToken
+	tokenServ        authenticator.AccessToken
+	piggyBankService service.PiggyBankService
 }
 
-func NewAuthMiddleware(tokenServ authenticator.AccessToken) AuthMiddleware {
+func NewAuthMiddleware(tokenServ authenticator.AccessToken, piggyBankService service.PiggyBankService) AuthMiddleware {
 	return &authMiddleware{
-		tokenServ: tokenServ,
+		tokenServ:        tokenServ,
+		piggyBankService: piggyBankService,
 	}
 }
 
@@ -59,5 +64,34 @@ func (auth *authMiddleware) RequireToken() gin.HandlerFunc {
 			})
 			return
 		}
+	}
+}
+
+func (auth *authMiddleware) PiggyBankAuthorization() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		piggyBankId := ctx.Param("piggyBankId")
+		userId := fmt.Sprintf("%v", ctx.MustGet("id"))
+
+		piggyBankUserId, err := auth.piggyBankService.GetPiggyBankUser(piggyBankId)
+		if err != nil {
+			ctx.AbortWithStatusJSON(404, utils.ResponseWrapper{
+				Code:   404,
+				Status: "NOT FOUND",
+				Data:   nil,
+			})
+			return
+		}
+
+		if piggyBankUserId == userId {
+			ctx.Next()
+		} else {
+			ctx.AbortWithStatusJSON(404, utils.ResponseWrapper{
+				Code:   404,
+				Status: "NOT FOUND",
+				Data:   nil,
+			})
+			return
+		}
+
 	}
 }
