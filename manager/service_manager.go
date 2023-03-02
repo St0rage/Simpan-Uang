@@ -7,10 +7,11 @@ import (
 )
 
 type ServiceManager interface {
-  // UserService
+	// UserService
 	UserService() service.UserService
-  // PiggyBankService
+	// PiggyBankService
 	PiggyBankService() service.PiggyBankService
+	PiggyBankTransService() service.PiggyBankTransactionService
 	// WhislistService
 	WishlistService() service.WishlistService
 }
@@ -26,17 +27,19 @@ func (s *serviceManager) UserService() service.UserService {
 	return service.NewUserService(s.repoManager.UserRepo(), s.tokenServ, s.mailServ)
 }
 
-
 // PiggyBankService
 func (s *serviceManager) PiggyBankService() service.PiggyBankService {
-	return service.NewPiggyBankService(s.repoManager.PiggyBankRepo())
+	return service.NewPiggyBankService(s.repoManager.PiggyBankRepo(), s.PiggyBankTransService())
+}
+
+func (s *serviceManager) PiggyBankTransService() service.PiggyBankTransactionService {
+	return service.NewPiggyBankTransactionService(s.repoManager.PiggyBankTransRepo())
 }
 
 // WhislistService
 func (s *serviceManager) WishlistService() service.WishlistService {
 	return service.NewWishlistService(s.repoManager.WishlistRepo())
 }
-
 
 func NewServiceManager(repoManager RepositoryManager, tokenServ authenticator.AccessToken, mailServ mailer.MailService) ServiceManager {
 	return &serviceManager{
