@@ -18,7 +18,8 @@ type PiggyBankService interface {
 }
 
 type piggyBankService struct {
-	piggyBankRepo repository.PiggyBankRepository
+	piggyBankRepo         repository.PiggyBankRepository
+	piggyBankTransService PiggyBankTransactionService
 }
 
 func (piggyBankservice *piggyBankService) CreatePiggyBank(userId string, newPiggyBank *web.PiggyBankCreateUpdateRequest) error {
@@ -57,7 +58,7 @@ func (piggyBankService *piggyBankService) GetAllPiggyBank(userId string) []web.P
 		piggyBankResponses[i].UserId = piggyBank.UserId
 		piggyBankResponses[i].PiggyBankName = piggyBank.PiggyBankName
 		piggyBankResponses[i].Type = piggyBank.Type
-		piggyBankResponses[i].Total = 0
+		piggyBankResponses[i].Total = piggyBankService.piggyBankTransService.GetTotalAmount(piggyBank.Id)
 	}
 
 	return piggyBankResponses
@@ -72,7 +73,7 @@ func (piggyBankService *piggyBankService) GetPiggyBankById(piggyBankId string) w
 	piggyBankResponse.UserId = piggyBank.UserId
 	piggyBankResponse.PiggyBankName = piggyBank.PiggyBankName
 	piggyBankResponse.Type = piggyBank.Type
-	piggyBankResponse.Total = 0
+	piggyBankResponse.Total = piggyBankService.piggyBankTransService.GetTotalAmount(piggyBank.Id)
 
 	return piggyBankResponse
 }
@@ -96,8 +97,9 @@ func (piggyBankService *piggyBankService) GetPiggyBankUser(piggyBankId string) (
 	return piggyBankService.piggyBankRepo.CheckPiggyBankUser(piggyBankId)
 }
 
-func NewPiggyBankService(piggyBankRepo repository.PiggyBankRepository) PiggyBankService {
+func NewPiggyBankService(piggyBankRepo repository.PiggyBankRepository, piggyBankTransService PiggyBankTransactionService) PiggyBankService {
 	return &piggyBankService{
-		piggyBankRepo: piggyBankRepo,
+		piggyBankRepo:         piggyBankRepo,
+		piggyBankTransService: piggyBankTransService,
 	}
 }

@@ -3,10 +3,11 @@ package manager
 import "github.com/St0rage/Simpan-Uang/repository"
 
 type RepositoryManager interface {
-  // UserRepo
+	// UserRepo
 	UserRepo() repository.UserRepository
-  // PiggyBankRepo
+	// PiggyBankRepo
 	PiggyBankRepo() repository.PiggyBankRepository
+	PiggyBankTransRepo() repository.PiggyBankTransactionRepository
 	// WishlistRepo
 	WishlistRepo() repository.WishlistRepository
 }
@@ -23,6 +24,10 @@ func (repo *repositoryManager) UserRepo() repository.UserRepository {
 // PiggyBankRepo
 func (repo *repositoryManager) PiggyBankRepo() repository.PiggyBankRepository {
 	return repository.NewPiggyBankRepository(repo.infra.DbConn())
+}
+
+func (repo *repositoryManager) PiggyBankTransRepo() repository.PiggyBankTransactionRepository {
+	return repository.NewPiggyBankTransactionRepository(repo.infra.DbConn())
 }
 
 // WhislistRepo()
