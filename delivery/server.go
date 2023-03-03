@@ -32,7 +32,7 @@ func (server *Server) initController() {
 
 	// Controller
 	controller.NewUserController(server.engine, server.serviceManager.UserService(), authMdw)
-	controller.NewPiggyBankController(server.engine, server.serviceManager.PiggyBankService(), authMdw)
+	controller.NewPiggyBankController(server.engine, server.serviceManager.PiggyBankService(), server.serviceManager.PiggyBankTransService(), authMdw)
 	controller.NewWishlistController(server.engine, server.serviceManager.WishlistService(), authMdw)
 }
 
