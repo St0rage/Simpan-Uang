@@ -8,9 +8,3 @@ type WishlistIdRequest struct {
 	Progress       	int 	`json:"progress"`
 	Total			float32 `json:"total"`
 }
-
-	// WishlistId	 	string  `json:"wishlist_id" db:"wishlist_id"`
-	// TransactionName 	string  `json:"transaction_name" db:"transaction_name"`
-	// Amount 			float32 `json:"amount"`
-	// Status       	bool 	`json:"status"`
-	// Date				int	    `json:"total"`

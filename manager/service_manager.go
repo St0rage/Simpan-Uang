@@ -14,6 +14,7 @@ type ServiceManager interface {
 	PiggyBankTransService() service.PiggyBankTransactionService
 	// WhislistService
 	WishlistService() service.WishlistService
+	WishlistTransService() service.WishlistTransactionService
 }
 
 type serviceManager struct {
@@ -38,7 +39,11 @@ func (s *serviceManager) PiggyBankTransService() service.PiggyBankTransactionSer
 
 // WhislistService
 func (s *serviceManager) WishlistService() service.WishlistService {
-	return service.NewWishlistService(s.repoManager.WishlistRepo())
+	return service.NewWishlistService(s.repoManager.WishlistRepo(), s.WishlistTransService())
+}
+
+func (s *serviceManager) WishlistTransService() service.WishlistTransactionService {
+	return service.NewWishlistTransactionService(s.repoManager.WishlistTransRepo())
 }
 
 func NewServiceManager(repoManager RepositoryManager, tokenServ authenticator.AccessToken, mailServ mailer.MailService) ServiceManager {

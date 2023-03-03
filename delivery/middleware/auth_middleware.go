@@ -13,17 +13,20 @@ import (
 type AuthMiddleware interface {
 	RequireToken() gin.HandlerFunc
 	PiggyBankAuthorization() gin.HandlerFunc
+	WishlistAuthorization() gin.HandlerFunc
 }
 
 type authMiddleware struct {
 	tokenServ        authenticator.AccessToken
 	piggyBankService service.PiggyBankService
+	wishlistService service.WishlistService
 }
 
-func NewAuthMiddleware(tokenServ authenticator.AccessToken, piggyBankService service.PiggyBankService) AuthMiddleware {
+func NewAuthMiddleware(tokenServ authenticator.AccessToken, piggyBankService service.PiggyBankService, wishlistService service.WishlistService) AuthMiddleware {
 	return &authMiddleware{
 		tokenServ:        tokenServ,
 		piggyBankService: piggyBankService,
+		wishlistService: wishlistService,
 	}
 }
 
@@ -83,6 +86,35 @@ func (auth *authMiddleware) PiggyBankAuthorization() gin.HandlerFunc {
 		}
 
 		if piggyBankUserId == userId {
+			ctx.Next()
+		} else {
+			ctx.AbortWithStatusJSON(404, utils.ResponseWrapper{
+				Code:   404,
+				Status: "NOT FOUND",
+				Data:   nil,
+			})
+			return
+		}
+
+	}
+}
+
+func (auth *authMiddleware) WishlistAuthorization() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		wishlistId := ctx.Param("wishlistId")
+		userId := fmt.Sprintf("%v", ctx.MustGet("id"))
+
+		wishlistUserId, err := auth.wishlistService.GetWishlistUser(wishlistId)
+		if err != nil {
+			ctx.AbortWithStatusJSON(404, utils.ResponseWrapper{
+				Code:   404,
+				Status: "NOT FOUND",
+				Data:   nil,
+			})
+			return
+		}
+
+		if wishlistUserId == userId {
 			ctx.Next()
 		} else {
 			ctx.AbortWithStatusJSON(404, utils.ResponseWrapper{

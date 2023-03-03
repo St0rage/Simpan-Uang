@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/St0rage/Simpan-Uang/delivery/middleware"
 	"github.com/St0rage/Simpan-Uang/model/web"
@@ -12,13 +13,14 @@ import (
 
 type WishlistController struct {
 	router  *gin.Engine
-	service service.WishlistService
+	wishlistService service.WishlistService
+	wishlistTransService service.WishlistTransactionService
 }
 
 func (wc *WishlistController) GetWishlist(ctx *gin.Context) {
 	Userid := fmt.Sprintf("%v", ctx.MustGet("id"))
 
-	user, err := wc.service.GetWishlist(Userid)
+	user, err := wc.wishlistService.GetWishlist(Userid)
 	if err != nil {
 		utils.HandleInternalServerError(ctx)
 	} else {
@@ -26,16 +28,13 @@ func (wc *WishlistController) GetWishlist(ctx *gin.Context) {
 	}
 }
 
-// func (wc *WishlistController) GetWishlistById(ctx *gin.Context) {
-// 	Id := fmt.Sprintf("%v", ctx.MustGet("id"))
+func (wc *WishlistController) GetWishlistById(ctx *gin.Context) {
+	wishlistId := ctx.Param("wishlistId")
 
-// 	wishlist, err := wc.service.GetWishlistById(Id)
-// 	if err != nil {
-// 		utils.HandleInternalServerError(ctx)
-// 	} else {
-// 		utils.HandleSuccess(ctx, wishlist)
-// 	}
-// }
+	wishlistRespone := wc.wishlistService.GetWishlistById(wishlistId)
+
+	utils.HandleSuccess(ctx, wishlistRespone)
+}
 
 func (wc *WishlistController) CreateNewWishlist(ctx *gin.Context) {
 	Userid := fmt.Sprintf("%v", ctx.MustGet("id"))
@@ -44,7 +43,7 @@ func (wc *WishlistController) CreateNewWishlist(ctx *gin.Context) {
 	if err != nil {
 		utils.HandleInternalServerError(ctx)
 	} else {
-		err := wc.service.CreateNewWishlist(Userid, wishlist)
+		err := wc.wishlistService.CreateNewWishlist(Userid, wishlist)
 		if err != nil {
 			utils.HandleBadRequest(ctx, map[string]string{
 				"message": err.Error(),
@@ -55,76 +54,98 @@ func (wc *WishlistController) CreateNewWishlist(ctx *gin.Context) {
 	}
 }
 
-// func (uc *UserController) registerUser(ctx *gin.Context) {
-// 	var user *domain.User
-// 	err := ctx.ShouldBindJSON(&user)
-// 	if err != nil {
-// 		utils.HandleBadRequest(ctx, err.Error())
-// 	} else {
-// 		err := uc.service.Register(user)
-// 		if err != nil {
-// 			utils.HandleInternalServerError(ctx)
-// 		} else {
-// 			utils.HandleSuccessCreated(ctx, map[string]string{
-// 				"message": "User berhasil dibuat",
-// 			})
-// 		}
-// 	}
-// }
+func (wc *WishlistController) UpdateWishlist(ctx *gin.Context) {
+	wishlistId := ctx.Param("wishlistId")
+	var wishlistUpdate *web.WishlistUpdateRequest
 
-// func (uc *UserController) loginUser(ctx *gin.Context) {
-// 	var loginRequest *web.UserLoginRequest
-// 	err := ctx.ShouldBindJSON(&loginRequest)
-// 	if err != nil {
-// 		utils.HandleBadRequest(ctx, err.Error())
-// 	} else {
-// 		token, err := uc.service.Login(loginRequest)
-// 		if err != nil {
-// 			utils.HandleBadRequest(ctx, map[string]string{
-// 				"message": "Email atau Password salah",
-// 			})
-// 		} else {
-// 			utils.HandleSuccess(ctx, map[string]string{
-// 				"token": token,
-// 			})
-// 		}
-// 	}
-// }
+	err := ctx.ShouldBindJSON(&wishlistUpdate)
+	if err != nil {
+		utils.HandleBadRequest(ctx, err.Error())
+	} else {
+		err := wc.wishlistService.UpdateWishlist(wishlistId, wishlistUpdate)
+		if err != nil {
+			utils.HandleBadRequest(ctx, map[string]string{
+				"message": err.Error(),
+			})
+		} else {
+			utils.HandleSuccess(ctx, map[string]string{
+				"message": "Wishlist berhasil diupdate",
+			})
+		}
+	}
+}
 
-// func (uc *UserController) forgotPassword(ctx *gin.Context) {
-// 	var resetRequest *web.UserResetRequest
-// 	err := ctx.ShouldBindJSON(&resetRequest)
-// 	if err != nil {
-// 		utils.HandleBadRequest(ctx, err.Error())
-// 	} else {
-// 		err := uc.service.ForgotPassword(resetRequest)
-// 		if err != nil {
-// 			utils.HandleNotFound(ctx, map[string]string{
-// 				"message": "Email tidak ditemukan",
-// 			})
-// 		} else {
-// 			utils.HandleSuccess(ctx, map[string]string{
-// 				"message": "Berhasil reset password, cek email anda",
-// 			})
-// 		}
-// 	}
-// }
+func (wc *WishlistController) DepositWishlist(ctx *gin.Context) {
+	wishlistId := ctx.Param("wishlistId")
+	wishlistTarget := wc.wishlistService.GetWishlistTarget(wishlistId)
+	var depositTransaction *web.DepositTransactionRequest
 
-func NewWishlistController(r *gin.Engine, service service.WishlistService, authMdw middleware.AuthMiddleware) *WishlistController {
-	controller := WishlistController{
-		router:  r,
-		service: service,
+	err := ctx.ShouldBindJSON(&depositTransaction)
+	if err != nil {
+		utils.HandleBadRequest(ctx, err.Error())
+	} else {
+		err := wc.wishlistTransService.DepositWishlist(wishlistId, wishlistTarget, depositTransaction)
+		if err != nil {
+			utils.HandleBadRequest(ctx, gin.H{
+				"message": err.Error(),
+			})
+		} else {
+			utils.HandleSuccessCreated(ctx, gin.H{
+				"message": "Transaksi Sebesar " + strconv.Itoa(int(depositTransaction.Amount)) + " Berhasil Masuk",
+			})
+		}
+	}
+}
+
+func (wc *WishlistController) WithdrawWishlist(ctx *gin.Context) {
+	wishlistId := ctx.Param("wishlistId")
+	var withdrawTransaction *web.WithdrawTransactionRequest
+
+	err := ctx.ShouldBindJSON(&withdrawTransaction)
+	if err != nil {
+		utils.HandleBadRequest(ctx, err.Error())
+	} else {
+		err := wc.wishlistTransService.WithdrawWishlist(wishlistId, withdrawTransaction)
+		if err != nil {
+			utils.HandleBadRequest(ctx, gin.H{
+				"message": err.Error(),
+			})
+		} else {
+			utils.HandleSuccessCreated(ctx, gin.H{
+				"message": "Transaksi Sebesar " + strconv.Itoa(int(withdrawTransaction.Amount)) + " Berhasil ditarik",
+			})
+		}
+	}
+}
+
+func (wc *WishlistController) GetWishlistTransactions(ctx *gin.Context) {
+	wishlistId := ctx.Param("wishlistId")
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	if page == 0 {
+		page = 1
 	}
 
-	// userRouteGroup := controller.router.Group("/api/user")
-	// userRouteGroup.GET("/", authMdw.RequireToken(), controller.getUser)
-	// userRouteGroup.POST("/register", controller.registerUser)
-	// userRouteGroup.POST("/login", controller.loginUser)
-	// userRouteGroup.POST("/forgot-password", controller.forgotPassword)
+	transactions := wc.wishlistTransService.GetWishlistTransaction(wishlistId, page)
+
+	utils.HandleSuccess(ctx, transactions)
+}
+
+func NewWishlistController(r *gin.Engine, wishlistService service.WishlistService, wishlistTransService service.WishlistTransactionService, authMdw middleware.AuthMiddleware) *WishlistController {
+	controller := WishlistController{
+		router:  r,
+		wishlistService: wishlistService,
+		wishlistTransService: wishlistTransService,
+	}
 
 	wishlistRouteGroup := controller.router.Group("/api/wishlist", authMdw.RequireToken())
 	wishlistRouteGroup.GET("/", controller.GetWishlist)
-	// wishlistRouteGroup.GET("/{wishlistId}", controller.GetWishlistById)
+	wishlistRouteGroup.GET("/:wishlistId", authMdw.WishlistAuthorization(), controller.GetWishlistById)
 	wishlistRouteGroup.POST("/create", controller.CreateNewWishlist)
+	wishlistRouteGroup.PUT("/:wishlistId/update", authMdw.WishlistAuthorization(), controller.UpdateWishlist)
+	wishlistRouteGroup.GET("/:wishlistId/transactions", authMdw.WishlistAuthorization(), controller.GetWishlistTransactions)
+	wishlistRouteGroup.POST("/:wishlistId/transactions/deposit", authMdw.WishlistAuthorization(), controller.DepositWishlist)
+	wishlistRouteGroup.POST("/:wishlistId/transactions/withdraw", authMdw.WishlistAuthorization(), controller.WithdrawWishlist)
+
+
 	return &controller
 }

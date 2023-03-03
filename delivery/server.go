@@ -28,12 +28,12 @@ func (server *Server) Run() {
 
 func (server *Server) initController() {
 	// Middleware
-	authMdw := middleware.NewAuthMiddleware(server.tokenServ, server.serviceManager.PiggyBankService())
+	authMdw := middleware.NewAuthMiddleware(server.tokenServ, server.serviceManager.PiggyBankService(), server.serviceManager.WishlistService())
 
 	// Controller
 	controller.NewUserController(server.engine, server.serviceManager.UserService(), authMdw)
 	controller.NewPiggyBankController(server.engine, server.serviceManager.PiggyBankService(), server.serviceManager.PiggyBankTransService(), authMdw)
-	controller.NewWishlistController(server.engine, server.serviceManager.WishlistService(), authMdw)
+	controller.NewWishlistController(server.engine, server.serviceManager.WishlistService(), server.serviceManager.WishlistTransService(), authMdw)
 }
 
 func NewServer() *Server {

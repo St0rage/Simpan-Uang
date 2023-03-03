@@ -11,12 +11,16 @@ import (
 
 type WishlistService interface {
 	GetWishlist(userId string) ([]web.WishlistResponse, error)
-	// GetWishlistById(Id string) (web.WishlistIdRequest, error)
+	GetWishlistById(wishlistId string) web.WishlistResponse
 	CreateNewWishlist(userId string, wishlist *web.WishlistRequest) error
+	UpdateWishlist(wishlistId string, wishlistUpdate *web.WishlistUpdateRequest) error
+	GetWishlistUser(wishlistId string) (string, error)
+	GetWishlistTarget(wishlistId string) float32
 }
 
 type wishlistService struct {
-	wishlistRepo repository.WishlistRepository
+	wishlistRepo         repository.WishlistRepository
+	wishlistTransService WishlistTransactionService
 }
 
 func (w *wishlistService) GetWishlist(userId string) ([]web.WishlistResponse, error) {
@@ -31,18 +35,10 @@ func (w *wishlistService) GetWishlist(userId string) ([]web.WishlistResponse, er
 		wishlistResponse[i].WishlistName = value.WishlistName
 		wishlistResponse[i].WishlistTarget = value.WishlistTarget
 		wishlistResponse[i].Progress = value.Progress
-		wishlistResponse[i].Total = 0
+		wishlistResponse[i].Total = w.wishlistTransService.GetWishlistTotal(value.Id)
 	}
 	return wishlistResponse, nil
 }
-
-// func (w *wishlistService) GetWishlistById(Id string) (web.WishlistIdRequest, error) {
-// 	wishlist, err := w.wishlistRepo.GetById(Id)
-// 	if err != nil {
-// 		return wishlist, err
-// 	}
-// 	return wishlist, nil
-// }
 
 func (w *wishlistService) CreateNewWishlist(userId string, wishlist *web.WishlistRequest) error {
 	var newWishlist domain.Wishlist
@@ -62,8 +58,48 @@ func (w *wishlistService) CreateNewWishlist(userId string, wishlist *web.Wishlis
 	return nil
 }
 
-func NewWishlistService(wishlistRepo repository.WishlistRepository) WishlistService {
+func (w *wishlistService) GetWishlistById(wishlistId string) web.WishlistResponse {
+	var WishlistResponse web.WishlistResponse
+
+	wishlist := w.wishlistRepo.FindById(wishlistId)
+
+	WishlistResponse.Id = wishlist.Id
+	WishlistResponse.UserId = wishlist.UserId
+	WishlistResponse.WishlistName = wishlist.WishlistName
+	WishlistResponse.WishlistTarget = wishlist.WishlistTarget
+	WishlistResponse.Progress = wishlist.Progress
+	WishlistResponse.Total = w.wishlistTransService.GetWishlistTotal(wishlist.Id)
+
+	return WishlistResponse
+}
+
+func (w *wishlistService) UpdateWishlist(wishlistId string, wishlistUpdate *web.WishlistUpdateRequest) error {
+	wishlist := w.wishlistRepo.FindById(wishlistId)
+
+	exist := w.wishlistRepo.CheckWishlistName(wishlistUpdate.WishlistName, wishlist.UserId)
+	if exist {
+		return errors.New("nama wishlist sudah digunakan")
+	} else {
+		wishlist.WishlistName = wishlistUpdate.WishlistName
+		wishlist.WishlistTarget = wishlistUpdate.WishlistTarget
+	}
+
+	w.wishlistRepo.Update(&wishlist)
+
+	return nil
+}
+
+func (w *wishlistService) GetWishlistUser(wishlistId string) (string, error) {
+	return w.wishlistRepo.CheckWishlistUser(wishlistId)
+}
+
+func (w *wishlistService) GetWishlistTarget(wishlistId string) float32 {
+	return w.wishlistRepo.GetTarget(wishlistId)
+}
+
+func NewWishlistService(wishlistRepo repository.WishlistRepository, wishlistTransService WishlistTransactionService) WishlistService {
 	return &wishlistService{
 		wishlistRepo: wishlistRepo,
+		wishlistTransService: wishlistTransService,
 	}
 }
