@@ -14,6 +14,8 @@ type PiggyBankService interface {
 	GetAllPiggyBank(userId string) []web.PiggyBankReponse
 	GetPiggyBankById(piggyBankId string) web.PiggyBankReponse
 	UpdatePiggyBank(piggyBankId string, piggyBankUpdate *web.PiggyBankCreateUpdateRequest) error
+	DeletePiggyBank(userId string, piggyBankId string)
+	GetMainPiggyBank(userId string) string
 	GetPiggyBankUser(piggyBankId string) (string, error)
 }
 
@@ -91,6 +93,24 @@ func (piggyBankService *piggyBankService) UpdatePiggyBank(piggyBankId string, pi
 	piggyBankService.piggyBankRepo.Update(&piggyBank)
 
 	return nil
+}
+
+func (piggyBankService *piggyBankService) DeletePiggyBank(userId string, piggyBankId string) {
+	total := piggyBankService.piggyBankTransService.GetTotalAmount(piggyBankId)
+	mainPiggyBankId := piggyBankService.GetMainPiggyBank(userId)
+
+	if total > 0 {
+		var transferRequest web.TransferTransactionRequest
+		transferRequest.Amount = total
+		piggyBankService.piggyBankTransService.TransferTransaction(userId, mainPiggyBankId, &transferRequest)
+	}
+
+	piggyBankService.piggyBankRepo.Delete(piggyBankId)
+
+}
+
+func (piggyBankService *piggyBankService) GetMainPiggyBank(userId string) string {
+	return piggyBankService.piggyBankRepo.FindMainPiggyBank(userId)
 }
 
 func (piggyBankService *piggyBankService) GetPiggyBankUser(piggyBankId string) (string, error) {

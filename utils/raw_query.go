@@ -16,20 +16,25 @@ const (
 	INSERT_PIGGY_BANK         = "INSERT INTO piggy_bank (id, user_id, piggy_bank_name, type) VALUES (:id, :user_id, :piggy_bank_name, :type)"
 	SELECT_PIGGY_BANK         = "SELECT * FROM piggy_bank WHERE user_id = $1"
 	SELECT_PIGGY_BANK_ID      = "SELECT * FROM piggy_bank WHERE id = $1"
+	SELECT_MAIN_PIGGY_BANK    = "SELECT id FROM piggy_bank WHERE type = true AND user_id = $1"
 	UPDATE_PIGGY_BANK         = "UPDATE piggy_bank SET piggy_bank_name = :piggy_bank_name WHERE id = :id"
+	DELETE_PIGGY_BANK         = "DELETE FROM piggy_bank WHERE id = $1"
+	SELECT_PIGGY_BANK_USER_ID = "SELECT user_id FROM piggy_bank WHERE id = $1"
 	CHECK_MAIN_PIGGY_BANK     = "SELECT COUNT(*) FROM piggy_bank WHERE user_id = $1"
 	CHECK_PIGGY_BANK_NAME     = "SELECT COUNT(*) FROM piggy_bank WHERE piggy_bank_name = $1 AND user_id = $2"
-	SELECT_PIGGY_BANK_USER_ID = "SELECT user_id FROM piggy_bank WHERE id = $1"
+
 	INSERT_PIGGY_BANK_TRANSACTION = "INSERT INTO piggy_bank_transaction (id, piggy_bank_id, transaction_name, amount, status, date) VALUES (:id, :piggy_bank_id, :transaction_name, :amount, :status, :date)"
 	SELECT_PIGGY_BANK_TRANSACTION = "SELECT * FROM piggy_bank_transaction WHERE piggy_bank_id = $1 ORDER BY date DESC LIMIT $2 OFFSET $3"
+	DELETE_PIGGY_BANK_TRANSACTION = "DELETE FROM piggy_bank_transaction WHERE id = $1"
 	SELECT_PIGGY_BANK_AMOUNT      = "SELECT amount FROM piggy_bank_transaction WHERE piggy_bank_id = $1"
-
+	SELECT_LAST_TRANSACTION       = "SELECT id FROM piggy_bank_transaction WHERE piggy_bank_id = $1 ORDER BY date DESC LIMIT 1"
 	// END PIGGY BANK
 
 	// WHISLIST
 	INSERT_WISHLIST     = "INSERT INTO wishlist (id, user_id, wishlist_name, wishlist_target, progress) VALUES (:id, :user_id, :wishlist_name, :wishlist_target, :progress)"
 	SELECT_WISHLIST     = "SELECT * FROM wishlist WHERE user_id = $1"
 	SELECT_WISHLIST_ID  = "SELECT * FROM wishlist WHERE id = $1"
+
 	UPDATE_WISHLIST     = "UPDATE wishlist SET (wishlist_name) VALUES (:wishlist_name) WHERE id = :id"
 	CHECK_WISHLIST_NAME = "SELECT COUNT(*) FROM wishlist WHERE wishlist_name = $1 and user_id = $2"
 	SELECT_WISHLIST_USER_ID = "SELECT user_id FROM wishlist WHERE id = $1"

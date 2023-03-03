@@ -11,6 +11,8 @@ type PiggyBankRepository interface {
 	FindAllByUserId(userId string) []domain.PiggyBank
 	FindById(piggyBankId string) domain.PiggyBank
 	Update(piggyBank *domain.PiggyBank)
+	Delete(piggyBankId string)
+	FindMainPiggyBank(userId string) string
 	CheckMainPiggyBank(userId string) bool
 	CheckPiggyBankName(piggyBankName string, userId string) bool
 	CheckPiggyBankUser(piggyBankId string) (string, error)
@@ -47,11 +49,25 @@ func (piggyBankRepo *piggyBankRepository) FindById(piggyBankId string) domain.Pi
 	return piggyBank
 }
 
-func (piggyBankRepository *piggyBankRepository) Update(piggyBank *domain.PiggyBank) {
-	_, err := piggyBankRepository.db.NamedExec(utils.UPDATE_PIGGY_BANK, piggyBank)
+func (piggyBankRepo *piggyBankRepository) Update(piggyBank *domain.PiggyBank) {
+	_, err := piggyBankRepo.db.NamedExec(utils.UPDATE_PIGGY_BANK, piggyBank)
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (piggyBankRepo *piggyBankRepository) Delete(piggyBankId string) {
+	piggyBankRepo.db.MustExec(utils.DELETE_PIGGY_BANK, piggyBankId)
+}
+
+func (piggyBankRepo *piggyBankRepository) FindMainPiggyBank(userId string) string {
+	var piggyBankId string
+	err := piggyBankRepo.db.Get(&piggyBankId, utils.SELECT_MAIN_PIGGY_BANK, userId)
+	if err != nil {
+		panic(err)
+	}
+
+	return piggyBankId
 }
 
 func (piggyBankRepo *piggyBankRepository) CheckMainPiggyBank(userId string) bool {

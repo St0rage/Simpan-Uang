@@ -76,6 +76,19 @@ func (pc *PiggyBankController) UpdatePiggyBank(ctx *gin.Context) {
 	}
 }
 
+
+func (pc *PiggyBankController) DeletePiggyBank(ctx *gin.Context) {
+	userId := fmt.Sprintf("%v", ctx.MustGet("id"))
+	piggyBankId := ctx.Param("piggyBankId")
+
+	pc.piggyBankService.DeletePiggyBank(userId, piggyBankId)
+
+	utils.HandleSuccess(ctx, gin.H{
+		"message": "Tabungan Berhasil dihapus",
+	})
+
+}
+
 // PiggyBankTransaction
 func (pc *PiggyBankController) DepositPiggyBank(ctx *gin.Context) {
 	piggyBankId := ctx.Param("piggyBankId")
@@ -131,6 +144,22 @@ func (pc *PiggyBankController) GetPiggyBankTransactions(ctx *gin.Context) {
 	utils.HandleSuccess(ctx, transactions)
 }
 
+func (pc *PiggyBankController) DeletePiggyBankTransactions(ctx *gin.Context) {
+	piggyBankId := ctx.Param("piggyBankId")
+	piggyBankTransId := ctx.Param("piggyBankTransId")
+
+	err := pc.piggyBankTransService.DeleteTransaction(piggyBankTransId, piggyBankId)
+	if err != nil {
+		utils.HandleBadRequest(ctx, gin.H{
+			"message": err.Error(),
+		})
+	} else {
+		utils.HandleSuccess(ctx, gin.H{
+			"message": "Transaksi berhasil dihapus",
+		})
+	}
+}
+
 func NewPiggyBankController(r *gin.Engine, piggyBankService service.PiggyBankService, piggyBankTransService service.PiggyBankTransactionService, authMdw middleware.AuthMiddleware) *PiggyBankController {
 	controller := PiggyBankController{
 		router:                r,
@@ -145,10 +174,13 @@ func NewPiggyBankController(r *gin.Engine, piggyBankService service.PiggyBankSer
 	piggyBankRouteGroup.GET("/:piggyBankId", authMdw.PiggyBankAuthorization(), controller.GetPiggyBankById)
 	piggyBankRouteGroup.POST("/create", controller.CreatePiggyBank)
 	piggyBankRouteGroup.PUT("/:piggyBankId/update", authMdw.PiggyBankAuthorization(), controller.UpdatePiggyBank)
+	piggyBankRouteGroup.DELETE("/:piggyBankId/delete", authMdw.PiggyBankAuthorization(), controller.DeletePiggyBank)
 	// piggy-bank-transaction
 	piggyBankRouteGroup.GET("/:piggyBankId/transactions", authMdw.PiggyBankAuthorization(), controller.GetPiggyBankTransactions)
 	piggyBankRouteGroup.POST("/:piggyBankId/transactions/deposit", authMdw.PiggyBankAuthorization(), controller.DepositPiggyBank)
 	piggyBankRouteGroup.POST("/:piggyBankId/transactions/withdraw", authMdw.PiggyBankAuthorization(), controller.WithdrawPiggyBank)
+	piggyBankRouteGroup.DELETE("/:piggyBankId/transactions/:piggyBankTransId/delete", authMdw.PiggyBankAuthorization(), controller.DeletePiggyBankTransactions)
+
 
 	return &controller
 }
