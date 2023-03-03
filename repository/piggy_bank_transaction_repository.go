@@ -25,7 +25,8 @@ func (piggyBankTransRepo *piggyBankTransactionRepository) Save(piggyBankTransact
 	}
 }
 
-func (piggyBankTransRepo *piggyBankTransactionRepository) FindAll(piggyBankId string, page int) []domain.PiggyBankTransaction {
+
+func (piggyBankTransRepo *piggyBankTransactionRepository) FindAllTransactions(piggyBankId string, page int) []domain.PiggyBankTransaction {
 	var piggyBankTransactions []domain.PiggyBankTransaction
 
 	limit := 10
@@ -37,6 +38,7 @@ func (piggyBankTransRepo *piggyBankTransactionRepository) FindAll(piggyBankId st
 
 	return piggyBankTransactions
 }
+
 
 func (piggyBankTransRepo *piggyBankTransactionRepository) Delete(piggyBankTransId string) {
 	piggyBankTransRepo.db.MustExec(utils.DELETE_PIGGY_BANK_TRANSACTION, piggyBankTransId)
@@ -51,6 +53,7 @@ func (piggyBankTransRepo *piggyBankTransactionRepository) FindAmount(piggyBankId
 
 	return piggyBankTransactions
 }
+
 
 func (piggyBankTransRepo *piggyBankTransactionRepository) FindLastTransaction(piggyBankId string) string {
 	var piggyBankTransId string

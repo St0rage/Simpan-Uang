@@ -76,6 +76,7 @@ func (pc *PiggyBankController) UpdatePiggyBank(ctx *gin.Context) {
 	}
 }
 
+
 func (pc *PiggyBankController) DeletePiggyBank(ctx *gin.Context) {
 	userId := fmt.Sprintf("%v", ctx.MustGet("id"))
 	piggyBankId := ctx.Param("piggyBankId")
@@ -179,6 +180,7 @@ func NewPiggyBankController(r *gin.Engine, piggyBankService service.PiggyBankSer
 	piggyBankRouteGroup.POST("/:piggyBankId/transactions/deposit", authMdw.PiggyBankAuthorization(), controller.DepositPiggyBank)
 	piggyBankRouteGroup.POST("/:piggyBankId/transactions/withdraw", authMdw.PiggyBankAuthorization(), controller.WithdrawPiggyBank)
 	piggyBankRouteGroup.DELETE("/:piggyBankId/transactions/:piggyBankTransId/delete", authMdw.PiggyBankAuthorization(), controller.DeletePiggyBankTransactions)
+
 
 	return &controller
 }

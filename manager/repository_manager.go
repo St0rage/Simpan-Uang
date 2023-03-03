@@ -10,6 +10,8 @@ type RepositoryManager interface {
 	PiggyBankTransRepo() repository.PiggyBankTransactionRepository
 	// WishlistRepo
 	WishlistRepo() repository.WishlistRepository
+	WishlistTransRepo() repository.WishlistTransactionRepository
+
 }
 
 type repositoryManager struct {
@@ -33,6 +35,10 @@ func (repo *repositoryManager) PiggyBankTransRepo() repository.PiggyBankTransact
 // WhislistRepo()
 func (repo *repositoryManager) WishlistRepo() repository.WishlistRepository {
 	return repository.NewWishlistRepository(repo.infra.DbConn())
+}
+
+func (repo *repositoryManager) WishlistTransRepo() repository.WishlistTransactionRepository {
+	return repository.NewWishlistTransactionRepository(repo.infra.DbConn())
 }
 
 func NewRepositoryManager(manager InfraManager) RepositoryManager {
