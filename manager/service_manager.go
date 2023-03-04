@@ -39,7 +39,7 @@ func (s *serviceManager) PiggyBankTransService() service.PiggyBankTransactionSer
 
 // WhislistService
 func (s *serviceManager) WishlistService() service.WishlistService {
-	return service.NewWishlistService(s.repoManager.WishlistRepo(), s.WishlistTransService())
+	return service.NewWishlistService(s.repoManager.WishlistRepo(), s.WishlistTransService(), s.PiggyBankService(), s.PiggyBankTransService())
 }
 
 func (s *serviceManager) WishlistTransService() service.WishlistTransactionService {

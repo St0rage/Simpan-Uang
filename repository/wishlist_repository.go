@@ -14,6 +14,7 @@ type WishlistRepository interface {
 	CheckWishlistName(wishlistName string, userId string) bool
 	CheckWishlistUser(wishlistId string) (string, error)
 	GetTarget(wishlistId string) float32
+	Delete(wishlistId string)
 }
 
 type wishlistRepository struct {
@@ -85,6 +86,9 @@ func (w *wishlistRepository) GetTarget(wishlistId string) float32 {
 		panic(err)
 	}
 	return wishlistTarget
+}
+func (w *wishlistRepository) Delete(wishlistId string) {
+	w.db.MustExec(utils.DELETE_WISHLIST, wishlistId)
 }
 
 func NewWishlistRepository(db *sqlx.DB) WishlistRepository {

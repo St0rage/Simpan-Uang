@@ -10,6 +10,8 @@ type WishlistTransactionRepository interface {
 	Save(wishlistTransaction *domain.WishlistTransaction)
 	GetAll(wishlistId string, page int) []domain.WishlistTransaction
 	GetAmount(wishlistId string) []domain.WishlistTransaction
+	Delete(wishlistTransId string)
+	FindLastTransaction(wishlistId string) string
 }
 
 type wishlistTransactionRepository struct {
@@ -44,6 +46,20 @@ func (wishlistTransRepo *wishlistTransactionRepository) GetAmount(wishlistId str
 	}
 
 	return wishlistTransaction
+}
+
+func (wishlistTransRepo *wishlistTransactionRepository) Delete(wishlistTransId string) {
+	wishlistTransRepo.db.MustExec(utils.DELETE_WISHLIST_TRANSACTION, wishlistTransId)
+}
+
+func (wishlistTransRepo *wishlistTransactionRepository) FindLastTransaction(wishlistId string) string {
+	var wishlistTransId string
+	err := wishlistTransRepo.db.Get(&wishlistTransId, utils.SELECT_WISHLIST_LAST_TRANSACTION, wishlistId)
+	if err != nil {
+		panic(err)
+	}
+
+	return wishlistTransId
 }
 
 func NewWishlistTransactionRepository(db *sqlx.DB) WishlistTransactionRepository {

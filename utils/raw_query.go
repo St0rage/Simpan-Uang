@@ -35,13 +35,16 @@ const (
 	SELECT_WISHLIST    = "SELECT * FROM wishlist WHERE user_id = $1"
 	SELECT_WISHLIST_ID = "SELECT * FROM wishlist WHERE id = $1"
 
-	UPDATE_WISHLIST             = "UPDATE wishlist SET wishlist_name = :wishlist_name, wishlist_target = :wishlist_target WHERE id = :id"
-	CHECK_WISHLIST_NAME         = "SELECT COUNT(*) FROM wishlist WHERE wishlist_name = $1 and user_id = $2"
-	SELECT_WISHLIST_USER_ID     = "SELECT user_id FROM wishlist WHERE id = $1"
-	SELECT_WISHLIST_TARGET      = "SELECT wishlist_target FROM wishlist WHERE id = $1"
-	INSERT_WISHLIST_TRANSACTION = "INSERT INTO wishlist_transaction (id, wishlist_id, transaction_name, amount, status, date) VALUES (:id, :wishlist_id, :transaction_name, :amount, :status, :date)"
-	SELECT_WISHLIST_TRANSACTION = "SELECT * FROM wishlist_transaction WHERE wishlist_id = $1 ORDER BY date DESC LIMIT $2 OFFSET $3"
-	SELECT_WISHLIST_AMOUNT      = "SELECT amount FROM wishlist_transaction WHERE wishlist_id = $1"
+	UPDATE_WISHLIST                  = "UPDATE wishlist SET wishlist_name = :wishlist_name, wishlist_target = :wishlist_target WHERE id = :id"
+	CHECK_WISHLIST_NAME              = "SELECT COUNT(*) FROM wishlist WHERE wishlist_name = $1 and user_id = $2"
+	SELECT_WISHLIST_USER_ID          = "SELECT user_id FROM wishlist WHERE id = $1"
+	SELECT_WISHLIST_TARGET           = "SELECT wishlist_target FROM wishlist WHERE id = $1"
+	INSERT_WISHLIST_TRANSACTION      = "INSERT INTO wishlist_transaction (id, wishlist_id, transaction_name, amount, status, date) VALUES (:id, :wishlist_id, :transaction_name, :amount, :status, :date)"
+	SELECT_WISHLIST_TRANSACTION      = "SELECT * FROM wishlist_transaction WHERE wishlist_id = $1 ORDER BY date DESC LIMIT $2 OFFSET $3"
+	SELECT_WISHLIST_AMOUNT           = "SELECT amount FROM wishlist_transaction WHERE wishlist_id = $1"
+	DELETE_WISHLIST                  = "DELETE FROM wishlist WHERE id = $1"
+	DELETE_WISHLIST_TRANSACTION      = "DELETE FROM wishlist_transaction WHERE id = $1"
+	SELECT_WISHLIST_LAST_TRANSACTION = "SELECT id FROM wishlist_transaction WHERE wishlist_id = $1 ORDER BY date DESC LIMIT 1"
 
 	// END WHISLIST
 

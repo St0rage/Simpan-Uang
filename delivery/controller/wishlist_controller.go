@@ -75,6 +75,17 @@ func (wc *WishlistController) UpdateWishlist(ctx *gin.Context) {
 	}
 }
 
+func (wc *WishlistController) DeleteWishlist(ctx *gin.Context) {
+	userId := fmt.Sprintf("%v", ctx.MustGet("id"))
+	wishlistId := ctx.Param("wishlistId")
+
+	wc.wishlistService.DeleteWishlist(userId, wishlistId)
+	utils.HandleSuccess(ctx, gin.H{
+		"message": "Tabungan Berhasil dihapus",
+	})
+
+}
+
 func (wc *WishlistController) DepositWishlist(ctx *gin.Context) {
 	wishlistId := ctx.Param("wishlistId")
 	wishlistTarget := wc.wishlistService.GetWishlistTarget(wishlistId)
@@ -130,6 +141,22 @@ func (wc *WishlistController) GetWishlistTransactions(ctx *gin.Context) {
 	utils.HandleSuccess(ctx, transactions)
 }
 
+func (wc *WishlistController) DeleteWishlistTransactions(ctx *gin.Context) {
+	wishlistId := ctx.Param("wishlistId")
+	wishlistTransId := ctx.Param("wishlistTransId")
+
+	err := wc.wishlistTransService.DeleteTransaction(wishlistTransId, wishlistId)
+	if err != nil {
+		utils.HandleBadRequest(ctx, gin.H{
+			"message": err.Error(),
+		})
+	} else {
+		utils.HandleSuccess(ctx, gin.H{
+			"message": "Transaksi berhasil dihapus",
+		})
+	}
+}
+
 func NewWishlistController(r *gin.Engine, wishlistService service.WishlistService, wishlistTransService service.WishlistTransactionService, authMdw middleware.AuthMiddleware) *WishlistController {
 	controller := WishlistController{
 		router:               r,
@@ -142,9 +169,11 @@ func NewWishlistController(r *gin.Engine, wishlistService service.WishlistServic
 	wishlistRouteGroup.GET("/:wishlistId", authMdw.WishlistAuthorization(), controller.GetWishlistById)
 	wishlistRouteGroup.POST("/create", controller.CreateNewWishlist)
 	wishlistRouteGroup.PUT("/:wishlistId/update", authMdw.WishlistAuthorization(), controller.UpdateWishlist)
+	wishlistRouteGroup.DELETE("/:wishlistId/delete", authMdw.WishlistAuthorization(), controller.DeleteWishlist)
 	wishlistRouteGroup.GET("/:wishlistId/transactions", authMdw.WishlistAuthorization(), controller.GetWishlistTransactions)
 	wishlistRouteGroup.POST("/:wishlistId/transactions/deposit", authMdw.WishlistAuthorization(), controller.DepositWishlist)
 	wishlistRouteGroup.POST("/:wishlistId/transactions/withdraw", authMdw.WishlistAuthorization(), controller.WithdrawWishlist)
+	wishlistRouteGroup.DELETE("/:wishlistId/transactions/:wishlistTransId/delete", authMdw.WishlistAuthorization(), controller.DeleteWishlistTransactions)
 
 	return &controller
 }
