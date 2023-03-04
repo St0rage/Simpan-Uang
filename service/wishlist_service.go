@@ -16,11 +16,14 @@ type WishlistService interface {
 	UpdateWishlist(wishlistId string, wishlistUpdate *web.WishlistUpdateRequest) error
 	GetWishlistUser(wishlistId string) (string, error)
 	GetWishlistTarget(wishlistId string) float32
+	DeleteWishlist(userId string, wishlistId string)
 }
 
 type wishlistService struct {
-	wishlistRepo         repository.WishlistRepository
-	wishlistTransService WishlistTransactionService
+	wishlistRepo          repository.WishlistRepository
+	wishlistTransService  WishlistTransactionService
+	piggyBankService      PiggyBankService
+	piggyBankTransService PiggyBankTransactionService
 }
 
 func (w *wishlistService) GetWishlist(userId string) ([]web.WishlistResponse, error) {
@@ -100,9 +103,24 @@ func (w *wishlistService) GetWishlistTarget(wishlistId string) float32 {
 	return w.wishlistRepo.GetTarget(wishlistId)
 }
 
-func NewWishlistService(wishlistRepo repository.WishlistRepository, wishlistTransService WishlistTransactionService) WishlistService {
+func (w *wishlistService) DeleteWishlist(userId string, wishlistId string) {
+	total := w.wishlistTransService.GetWishlistTotal(wishlistId)
+	mainPiggyBankId := w.piggyBankService.GetMainPiggyBank(userId)
+
+	if total > 0 {
+		var transferRequest web.TransferTransactionRequest
+		transferRequest.Amount = total
+		w.piggyBankTransService.TransferTransaction(userId, mainPiggyBankId, &transferRequest)
+	}
+
+	w.wishlistRepo.Delete(wishlistId)
+}
+
+func NewWishlistService(wishlistRepo repository.WishlistRepository, wishlistTransService WishlistTransactionService, piggyBankService PiggyBankService, piggyBankTransService PiggyBankTransactionService) WishlistService {
 	return &wishlistService{
-		wishlistRepo:         wishlistRepo,
-		wishlistTransService: wishlistTransService,
+		wishlistRepo:          wishlistRepo,
+		wishlistTransService:  wishlistTransService,
+		piggyBankService:      piggyBankService,
+		piggyBankTransService: piggyBankTransService,
 	}
 }

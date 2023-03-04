@@ -16,6 +16,7 @@ type WishlistTransactionService interface {
 	WithdrawWishlist(wishlistId string, withdrawRequest *web.WithdrawTransactionRequest) error
 	GetWishlistTransaction(wishlistId string, page int) []domain.WishlistTransaction
 	GetWishlistTotal(wishlistId string) float32
+	DeleteTransaction(wishlistTransId string, wishlistId string) error
 }
 
 type wishlistTransactionService struct {
@@ -86,6 +87,17 @@ func (wishlistTransService *wishlistTransactionService) GetWishlistTotal(wishlis
 
 func (wishlistTransService *wishlistTransactionService) GetWishlistTransaction(wishlistId string, page int) []domain.WishlistTransaction {
 	return wishlistTransService.wishlistTransRepo.GetAll(wishlistId, page)
+}
+
+func (wishlistTransService *wishlistTransactionService) DeleteTransaction(wishlistTransId string, wishlistId string) error {
+	lastTransactionId := wishlistTransService.wishlistTransRepo.FindLastTransaction(wishlistId)
+
+	if lastTransactionId != wishlistTransId {
+		return errors.New("hanya transaksi terakhir yang bisa dihapus")
+	} else {
+		wishlistTransService.wishlistTransRepo.Delete(wishlistTransId)
+		return nil
+	}
 }
 
 func NewWishlistTransactionService(wishlistTransRepo repository.WishlistTransactionRepository) WishlistTransactionService {
