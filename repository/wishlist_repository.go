@@ -1,7 +1,6 @@
 package repository
 
 import (
-
 	"github.com/St0rage/Simpan-Uang/model/domain"
 	"github.com/St0rage/Simpan-Uang/utils"
 	"github.com/jmoiron/sqlx"
@@ -15,7 +14,6 @@ type WishlistRepository interface {
 	CheckWishlistName(wishlistName string, userId string) bool
 	CheckWishlistUser(wishlistId string) (string, error)
 	GetTarget(wishlistId string) float32
-
 }
 
 type wishlistRepository struct {
@@ -88,7 +86,6 @@ func (w *wishlistRepository) GetTarget(wishlistId string) float32 {
 	}
 	return wishlistTarget
 }
-
 
 func NewWishlistRepository(db *sqlx.DB) WishlistRepository {
 	return &wishlistRepository{

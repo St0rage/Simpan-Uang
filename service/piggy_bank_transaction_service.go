@@ -107,9 +107,6 @@ func (piggyBankTransService *piggyBankTransactionService) GetTotalAmount(piggyBa
 	return total
 }
 
-func (piggyBankTransService *piggyBankTransactionService) GetAllTransactions(piggyBankId string, page int) []domain.PiggyBankTransaction {
-	return piggyBankTransService.piggyBankTransRepo.FindAllTransactions(piggyBankId, page)
-}
 func NewPiggyBankTransactionService(piggyBankTransRepo repository.PiggyBankTransactionRepository) PiggyBankTransactionService {
 	return &piggyBankTransactionService{
 		piggyBankTransRepo: piggyBankTransRepo,

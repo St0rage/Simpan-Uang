@@ -28,11 +28,11 @@ func (pc *PiggyBankController) CreatePiggyBank(ctx *gin.Context) {
 	} else {
 		err := pc.piggyBankService.CreatePiggyBank(userId, newPiggyBank)
 		if err != nil {
-			utils.HandleBadRequest(ctx, map[string]string{
+			utils.HandleBadRequest(ctx, gin.H{
 				"message": err.Error(),
 			})
 		} else {
-			utils.HandleSuccessCreated(ctx, map[string]string{
+			utils.HandleSuccessCreated(ctx, gin.H{
 				"message": "Tabungan berhasil dibuat",
 			})
 		}
@@ -65,27 +65,31 @@ func (pc *PiggyBankController) UpdatePiggyBank(ctx *gin.Context) {
 	} else {
 		err := pc.piggyBankService.UpdatePiggyBank(piggyBankId, piggyBankUpdate)
 		if err != nil {
-			utils.HandleBadRequest(ctx, map[string]string{
+			utils.HandleBadRequest(ctx, gin.H{
 				"message": err.Error(),
 			})
 		} else {
-			utils.HandleSuccess(ctx, map[string]string{
+			utils.HandleSuccess(ctx, gin.H{
 				"message": "Tabungan berhasil diupdate",
 			})
 		}
 	}
 }
 
-
 func (pc *PiggyBankController) DeletePiggyBank(ctx *gin.Context) {
 	userId := fmt.Sprintf("%v", ctx.MustGet("id"))
 	piggyBankId := ctx.Param("piggyBankId")
 
-	pc.piggyBankService.DeletePiggyBank(userId, piggyBankId)
-
-	utils.HandleSuccess(ctx, gin.H{
-		"message": "Tabungan Berhasil dihapus",
-	})
+	err := pc.piggyBankService.DeletePiggyBank(userId, piggyBankId)
+	if err != nil {
+		utils.HandleBadRequest(ctx, gin.H{
+			"message": err.Error(),
+		})
+	} else {
+		utils.HandleSuccess(ctx, gin.H{
+			"message": "Tabungan Berhasil dihapus",
+		})
+	}
 
 }
 
@@ -180,7 +184,6 @@ func NewPiggyBankController(r *gin.Engine, piggyBankService service.PiggyBankSer
 	piggyBankRouteGroup.POST("/:piggyBankId/transactions/deposit", authMdw.PiggyBankAuthorization(), controller.DepositPiggyBank)
 	piggyBankRouteGroup.POST("/:piggyBankId/transactions/withdraw", authMdw.PiggyBankAuthorization(), controller.WithdrawPiggyBank)
 	piggyBankRouteGroup.DELETE("/:piggyBankId/transactions/:piggyBankTransId/delete", authMdw.PiggyBankAuthorization(), controller.DeletePiggyBankTransactions)
-
 
 	return &controller
 }

@@ -14,7 +14,7 @@ type PiggyBankService interface {
 	GetAllPiggyBank(userId string) []web.PiggyBankReponse
 	GetPiggyBankById(piggyBankId string) web.PiggyBankReponse
 	UpdatePiggyBank(piggyBankId string, piggyBankUpdate *web.PiggyBankCreateUpdateRequest) error
-	DeletePiggyBank(userId string, piggyBankId string)
+	DeletePiggyBank(userId string, piggyBankId string) error
 	GetMainPiggyBank(userId string) string
 	GetPiggyBankUser(piggyBankId string) (string, error)
 }
@@ -95,18 +95,23 @@ func (piggyBankService *piggyBankService) UpdatePiggyBank(piggyBankId string, pi
 	return nil
 }
 
-func (piggyBankService *piggyBankService) DeletePiggyBank(userId string, piggyBankId string) {
+func (piggyBankService *piggyBankService) DeletePiggyBank(userId string, piggyBankId string) error {
 	total := piggyBankService.piggyBankTransService.GetTotalAmount(piggyBankId)
 	mainPiggyBankId := piggyBankService.GetMainPiggyBank(userId)
 
-	if total > 0 {
-		var transferRequest web.TransferTransactionRequest
-		transferRequest.Amount = total
-		piggyBankService.piggyBankTransService.TransferTransaction(userId, mainPiggyBankId, &transferRequest)
+	if mainPiggyBankId != piggyBankId {
+		if total > 0 {
+			var transferRequest web.TransferTransactionRequest
+			transferRequest.Amount = total
+			piggyBankService.piggyBankTransService.TransferTransaction(userId, mainPiggyBankId, &transferRequest)
+		}
+
+		piggyBankService.piggyBankRepo.Delete(piggyBankId)
+
+		return nil
+	} else {
+		return errors.New("tabungan utama tidak dapat dihapus")
 	}
-
-	piggyBankService.piggyBankRepo.Delete(piggyBankId)
-
 }
 
 func (piggyBankService *piggyBankService) GetMainPiggyBank(userId string) string {

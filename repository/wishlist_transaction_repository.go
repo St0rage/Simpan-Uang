@@ -8,7 +8,7 @@ import (
 
 type WishlistTransactionRepository interface {
 	Save(wishlistTransaction *domain.WishlistTransaction)
-	GetAllTransactions(wishlistId string, page int) []domain.WishlistTransaction
+	GetAll(wishlistId string, page int) []domain.WishlistTransaction
 	GetAmount(wishlistId string) []domain.WishlistTransaction
 }
 
@@ -23,7 +23,7 @@ func (wishlistTransRepo *wishlistTransactionRepository) Save(wishlistTransaction
 	}
 }
 
-func (wishlistTransRepo *wishlistTransactionRepository) GetAllTransactions(wishlistId string, page int) []domain.WishlistTransaction {
+func (wishlistTransRepo *wishlistTransactionRepository) GetAll(wishlistId string, page int) []domain.WishlistTransaction {
 	var wishlistTransaction []domain.WishlistTransaction
 
 	limit := 10

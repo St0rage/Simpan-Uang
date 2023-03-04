@@ -12,8 +12,8 @@ import (
 )
 
 type WishlistController struct {
-	router  *gin.Engine
-	wishlistService service.WishlistService
+	router               *gin.Engine
+	wishlistService      service.WishlistService
 	wishlistTransService service.WishlistTransactionService
 }
 
@@ -45,7 +45,7 @@ func (wc *WishlistController) CreateNewWishlist(ctx *gin.Context) {
 	} else {
 		err := wc.wishlistService.CreateNewWishlist(Userid, wishlist)
 		if err != nil {
-			utils.HandleBadRequest(ctx, map[string]string{
+			utils.HandleBadRequest(ctx, gin.H{
 				"message": err.Error(),
 			})
 		} else {
@@ -64,11 +64,11 @@ func (wc *WishlistController) UpdateWishlist(ctx *gin.Context) {
 	} else {
 		err := wc.wishlistService.UpdateWishlist(wishlistId, wishlistUpdate)
 		if err != nil {
-			utils.HandleBadRequest(ctx, map[string]string{
+			utils.HandleBadRequest(ctx, gin.H{
 				"message": err.Error(),
 			})
 		} else {
-			utils.HandleSuccess(ctx, map[string]string{
+			utils.HandleSuccess(ctx, gin.H{
 				"message": "Wishlist berhasil diupdate",
 			})
 		}
@@ -132,8 +132,8 @@ func (wc *WishlistController) GetWishlistTransactions(ctx *gin.Context) {
 
 func NewWishlistController(r *gin.Engine, wishlistService service.WishlistService, wishlistTransService service.WishlistTransactionService, authMdw middleware.AuthMiddleware) *WishlistController {
 	controller := WishlistController{
-		router:  r,
-		wishlistService: wishlistService,
+		router:               r,
+		wishlistService:      wishlistService,
 		wishlistTransService: wishlistTransService,
 	}
 
@@ -145,7 +145,6 @@ func NewWishlistController(r *gin.Engine, wishlistService service.WishlistServic
 	wishlistRouteGroup.GET("/:wishlistId/transactions", authMdw.WishlistAuthorization(), controller.GetWishlistTransactions)
 	wishlistRouteGroup.POST("/:wishlistId/transactions/deposit", authMdw.WishlistAuthorization(), controller.DepositWishlist)
 	wishlistRouteGroup.POST("/:wishlistId/transactions/withdraw", authMdw.WishlistAuthorization(), controller.WithdrawWishlist)
-
 
 	return &controller
 }

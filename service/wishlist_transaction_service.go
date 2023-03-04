@@ -24,13 +24,13 @@ type wishlistTransactionService struct {
 
 func (wishlistTransService *wishlistTransactionService) DepositWishlist(wishlistId string, wishlistTarget float32, depositRequest *web.DepositTransactionRequest) error {
 	total := wishlistTransService.GetWishlistTotal(wishlistId)
-	
+
 	if depositRequest.Amount < 500 {
 		return errors.New("minimal deposit Rp 500")
-	} else if depositRequest.Amount > wishlistTarget {
-		return errors.New("jumlah deposit melebihi target")
 	} else if total == wishlistTarget {
 		return errors.New("wishlist sudah mencapai target")
+	} else if depositRequest.Amount > wishlistTarget {
+		return errors.New("jumlah deposit melebihi target")
 	} else if (depositRequest.Amount + total) > wishlistTarget {
 		return errors.New("jumlah deposit melebihi target")
 	}
@@ -85,7 +85,7 @@ func (wishlistTransService *wishlistTransactionService) GetWishlistTotal(wishlis
 }
 
 func (wishlistTransService *wishlistTransactionService) GetWishlistTransaction(wishlistId string, page int) []domain.WishlistTransaction {
-	return wishlistTransService.wishlistTransRepo.GetAllTransactions(wishlistId, page)
+	return wishlistTransService.wishlistTransRepo.GetAll(wishlistId, page)
 }
 
 func NewWishlistTransactionService(wishlistTransRepo repository.WishlistTransactionRepository) WishlistTransactionService {

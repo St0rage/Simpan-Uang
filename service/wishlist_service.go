@@ -75,14 +75,17 @@ func (w *wishlistService) GetWishlistById(wishlistId string) web.WishlistRespons
 
 func (w *wishlistService) UpdateWishlist(wishlistId string, wishlistUpdate *web.WishlistUpdateRequest) error {
 	wishlist := w.wishlistRepo.FindById(wishlistId)
+	total := w.wishlistTransService.GetWishlistTotal(wishlistId)
 
 	exist := w.wishlistRepo.CheckWishlistName(wishlistUpdate.WishlistName, wishlist.UserId)
 	if exist {
 		return errors.New("nama wishlist sudah digunakan")
-	} else {
-		wishlist.WishlistName = wishlistUpdate.WishlistName
-		wishlist.WishlistTarget = wishlistUpdate.WishlistTarget
+	} else if wishlistUpdate.WishlistTarget <= total {
+		return errors.New("target tidak boleh kurang atau sama dengan total wishlist saat ini")
 	}
+
+	wishlist.WishlistName = wishlistUpdate.WishlistName
+	wishlist.WishlistTarget = wishlistUpdate.WishlistTarget
 
 	w.wishlistRepo.Update(&wishlist)
 
@@ -99,7 +102,7 @@ func (w *wishlistService) GetWishlistTarget(wishlistId string) float32 {
 
 func NewWishlistService(wishlistRepo repository.WishlistRepository, wishlistTransService WishlistTransactionService) WishlistService {
 	return &wishlistService{
-		wishlistRepo: wishlistRepo,
+		wishlistRepo:         wishlistRepo,
 		wishlistTransService: wishlistTransService,
 	}
 }
