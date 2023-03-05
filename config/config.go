@@ -3,9 +3,8 @@ package config
 import (
 	"os"
 
-	"github.com/St0rage/Simpan-Uang/utils"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 type ApiConfig struct {
@@ -43,8 +42,8 @@ type Config struct {
 }
 
 func (c *Config) readConfigFile() Config {
-	err := godotenv.Load()
-	utils.PanicIfError(err)
+	// err := godotenv.Load()
+	// utils.PanicIfError(err)
 
 	c.DbConfig = DbConfig{
 		Host:     os.Getenv("DB_HOST"),

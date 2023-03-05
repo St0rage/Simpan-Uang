@@ -30,10 +30,14 @@ func (server *Server) initController() {
 	// Middleware
 	authMdw := middleware.NewAuthMiddleware(server.tokenServ, server.serviceManager.PiggyBankService(), server.serviceManager.WishlistService())
 
+	// Serve Image
+	server.engine.Static("api/user/resources/avatar", "./resources/avatar")
+
 	// Controller
 	controller.NewUserController(server.engine, server.serviceManager.UserService(), authMdw)
 	controller.NewPiggyBankController(server.engine, server.serviceManager.PiggyBankService(), server.serviceManager.PiggyBankTransService(), authMdw)
 	controller.NewWishlistController(server.engine, server.serviceManager.WishlistService(), server.serviceManager.WishlistTransService(), authMdw)
+
 }
 
 func NewServer() *Server {

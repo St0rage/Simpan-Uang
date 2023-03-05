@@ -16,9 +16,9 @@ type UserController struct {
 }
 
 func (uc *UserController) getUser(ctx *gin.Context) {
-	id := fmt.Sprintf("%v", ctx.MustGet("id"))
+	userId := fmt.Sprintf("%v", ctx.MustGet("id"))
 
-	user := uc.service.GetUser(id)
+	user := uc.service.GetUser(userId)
 
 	utils.HandleSuccess(ctx, user)
 }
@@ -31,11 +31,11 @@ func (uc *UserController) registerUser(ctx *gin.Context) {
 	} else {
 		err := uc.service.Register(newUserRequest)
 		if err != nil {
-			utils.HandleBadRequest(ctx, map[string]string{
+			utils.HandleBadRequest(ctx, gin.H{
 				"message": err.Error(),
 			})
 		} else {
-			utils.HandleSuccessCreated(ctx, map[string]string{
+			utils.HandleSuccessCreated(ctx, gin.H{
 				"message": "User berhasil dibuat",
 			})
 		}
@@ -50,11 +50,11 @@ func (uc *UserController) loginUser(ctx *gin.Context) {
 	} else {
 		token, err := uc.service.Login(loginRequest)
 		if err != nil {
-			utils.HandleBadRequest(ctx, map[string]string{
+			utils.HandleBadRequest(ctx, gin.H{
 				"message": "Email atau Password salah",
 			})
 		} else {
-			utils.HandleSuccess(ctx, map[string]string{
+			utils.HandleSuccess(ctx, gin.H{
 				"message": "Login Berhasil",
 				"token":   token,
 			})
@@ -63,9 +63,9 @@ func (uc *UserController) loginUser(ctx *gin.Context) {
 }
 
 func (uc *UserController) forgotPassword(ctx *gin.Context) {
-	id := fmt.Sprintf("%v", ctx.MustGet("id"))
+	userId := fmt.Sprintf("%v", ctx.MustGet("id"))
 
-	isAdmin := uc.service.CheckAdmin(id)
+	isAdmin := uc.service.CheckAdmin(userId)
 
 	if !isAdmin {
 		utils.HandleUnauthorized(ctx)
@@ -77,11 +77,11 @@ func (uc *UserController) forgotPassword(ctx *gin.Context) {
 		} else {
 			err := uc.service.ForgotPassword(resetRequest)
 			if err != nil {
-				utils.HandleNotFound(ctx, map[string]string{
+				utils.HandleNotFound(ctx, gin.H{
 					"message": "Email tidak ditemukan",
 				})
 			} else {
-				utils.HandleSuccess(ctx, map[string]string{
+				utils.HandleSuccess(ctx, gin.H{
 					"message": "Berhasil reset password, cek email",
 				})
 			}
@@ -91,40 +91,60 @@ func (uc *UserController) forgotPassword(ctx *gin.Context) {
 }
 
 func (uc *UserController) changePassword(ctx *gin.Context) {
-	id := fmt.Sprintf("%v", ctx.MustGet("id"))
+	userId := fmt.Sprintf("%v", ctx.MustGet("id"))
 	var changePasswordRequest *web.UserChangePasswordRequest
 
 	err := ctx.ShouldBindJSON(&changePasswordRequest)
 	if err != nil {
 		utils.HandleBadRequest(ctx, err.Error())
 	} else {
-		uc.service.ChangePassword(id, changePasswordRequest)
-		utils.HandleSuccess(ctx, map[string]string{
+		uc.service.ChangePassword(userId, changePasswordRequest)
+		utils.HandleSuccess(ctx, gin.H{
 			"message": "Password berhasil diubah",
 		})
 	}
 }
 
 func (uc *UserController) updateUser(ctx *gin.Context) {
-	id := fmt.Sprintf("%v", ctx.MustGet("id"))
+	userId := fmt.Sprintf("%v", ctx.MustGet("id"))
 	var userUpdateRequest *web.UserUpdateRequest
 
 	err := ctx.ShouldBindJSON(&userUpdateRequest)
 	if err != nil {
 		utils.HandleBadRequest(ctx, err.Error())
 	} else {
-		err := uc.service.UpdateUser(id, userUpdateRequest)
+		err := uc.service.UpdateUser(userId, userUpdateRequest)
 		if err != nil {
-			utils.HandleBadRequest(ctx, map[string]string{
+			utils.HandleBadRequest(ctx, gin.H{
 				"message": err.Error(),
 			})
 		} else {
-			utils.HandleSuccess(ctx, map[string]string{
+			utils.HandleSuccess(ctx, gin.H{
 				"message": "User berhasil diupdate",
 			})
 		}
 	}
+}
 
+func (uc *UserController) updateAvatar(ctx *gin.Context) {
+	userId := fmt.Sprintf("%v", ctx.MustGet("id"))
+	var avatarUpdateRequest *web.UserAvatarRequest
+
+	err := ctx.ShouldBindJSON(&avatarUpdateRequest)
+	if err != nil {
+		utils.HandleBadRequest(ctx, err.Error())
+	} else {
+		err := uc.service.UpdateAvatar(userId, avatarUpdateRequest)
+		if err != nil {
+			utils.HandleBadRequest(ctx, gin.H{
+				"message": "format gambar tidak valid",
+			})
+		} else {
+			utils.HandleSuccess(ctx, gin.H{
+				"message": "avatar berhasil diupload",
+			})
+		}
+	}
 }
 
 func NewUserController(r *gin.Engine, service service.UserService, authMdw middleware.AuthMiddleware) *UserController {
@@ -141,6 +161,7 @@ func NewUserController(r *gin.Engine, service service.UserService, authMdw middl
 	userRouteGroup.POST("/forgot-password", authMdw.RequireToken(), controller.forgotPassword)
 	userRouteGroup.PUT("/change-password", authMdw.RequireToken(), controller.changePassword)
 	userRouteGroup.PUT("/update", authMdw.RequireToken(), controller.updateUser)
+	userRouteGroup.PUT("/update-avatar", authMdw.RequireToken(), controller.updateAvatar)
 
 	return &controller
 }

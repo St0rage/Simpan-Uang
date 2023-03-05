@@ -12,6 +12,7 @@ type UserRepository interface {
 	FindByEmail(userEmail string) (domain.User, error)
 	Update(user *domain.User)
 	UpdatePassword(user *domain.User)
+	UpdateAvatar(user *domain.User)
 	CheckAdmin() bool
 	CheckEmail(email string) bool
 	IsAdmin(userId string) bool
@@ -23,17 +24,13 @@ type userRepository struct {
 
 func (userRepo *userRepository) Save(user *domain.User) {
 	_, err := userRepo.db.NamedExec(utils.INSERT_USER, &user)
-	if err != nil {
-		panic(err)
-	}
+	utils.PanicIfError(err)
 }
 
 func (userRepo *userRepository) FindById(userId string) domain.User {
 	var user domain.User
 	err := userRepo.db.Get(&user, utils.SELECT_USER_ID, userId)
-	if err != nil {
-		panic(err)
-	}
+	utils.PanicIfError(err)
 
 	return user
 }
@@ -50,21 +47,23 @@ func (userRepo *userRepository) FindByEmail(userEmail string) (domain.User, erro
 
 func (userRepo *userRepository) Update(user *domain.User) {
 	_, err := userRepo.db.NamedExec(utils.UPDATE_USER, &user)
-	if err != nil {
-		panic(err)
-	}
+	utils.PanicIfError(err)
 }
 
 func (userRepo *userRepository) UpdatePassword(user *domain.User) {
 	_, err := userRepo.db.NamedExec(utils.UPDATE_USER_PASSWORD, &user)
-	if err != nil {
-		panic(err)
-	}
+	utils.PanicIfError(err)
+}
+
+func (userRepo *userRepository) UpdateAvatar(user *domain.User) {
+	_, err := userRepo.db.NamedExec(utils.UPDATE_USER_AVATAR, &user)
+	utils.PanicIfError(err)
 }
 
 func (userRepo *userRepository) CheckAdmin() bool {
 	var is_admin int
-	userRepo.db.Get(&is_admin, utils.CHECK_ADMIN)
+	err := userRepo.db.Get(&is_admin, utils.CHECK_ADMIN)
+	utils.PanicIfError(err)
 
 	if is_admin == 0 {
 		return false
@@ -75,7 +74,8 @@ func (userRepo *userRepository) CheckAdmin() bool {
 
 func (userRepo *userRepository) IsAdmin(userId string) bool {
 	var is_admin bool
-	userRepo.db.Get(&is_admin, utils.IS_ADMIN, userId)
+	err := userRepo.db.Get(&is_admin, utils.IS_ADMIN, userId)
+	utils.PanicIfError(err)
 
 	if is_admin {
 		return true
@@ -86,7 +86,8 @@ func (userRepo *userRepository) IsAdmin(userId string) bool {
 
 func (userRepo *userRepository) CheckEmail(email string) bool {
 	var exist int
-	userRepo.db.Get(&exist, utils.CHECK_EMAIL, email)
+	err := userRepo.db.Get(&exist, utils.CHECK_EMAIL, email)
+	utils.PanicIfError(err)
 
 	if exist == 1 {
 		return true
