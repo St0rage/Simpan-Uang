@@ -1,9 +1,10 @@
 package domain
 
 type User struct {
-	Id       string `json:"id"`
-	Name     string `json:"name" binding:"required,min=3,max=30"`
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=4"`
-	IsAdmin  bool   `db:"is_admin" json:"is_admin"`
+	Id       string `json:"id" db:"id"`
+	Name     string `json:"name" db:"name"`
+	Email    string `json:"email" db:"email"`
+	Password string `json:"password" db:"password"`
+	IsAdmin  bool   `json:"is_admin" db:"is_admin"`
+	Avatar   string `json:"avatar" db:"avatar"`
 }

@@ -3,7 +3,9 @@ package service
 import (
 	"errors"
 	"math/rand"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/St0rage/Simpan-Uang/model/domain"
 	"github.com/St0rage/Simpan-Uang/model/web"
@@ -20,6 +22,7 @@ type UserService interface {
 	Login(loginRequest *web.UserLoginRequest) (string, error)
 	ForgotPassword(resetRequest *web.UserResetRequest) error
 	ChangePassword(userId string, changePasswordRequest *web.UserChangePasswordRequest)
+	UpdateAvatar(userId string, updateAvatarRequest *web.UserAvatarRequest) error
 	UpdateUser(userId string, userUpdateRequest *web.UserUpdateRequest) error
 	CheckAdmin(userId string) bool
 	GetBalance(userId string) float32
@@ -42,6 +45,7 @@ func (userService *userService) GetUser(userId string) web.UserResponse {
 	userResponse.Email = user.Email
 	userResponse.IsAdmin = user.IsAdmin
 	userResponse.Balance = userService.GetBalance(userId)
+	userResponse.Avatar = os.Getenv("DOMAIN") + "/api/user/resources/avatar/" + user.Avatar
 
 	return userResponse
 }
@@ -66,6 +70,7 @@ func (userService *userService) Register(newUser *web.UserRegisterRequest) error
 	user.Name = newUser.Name
 	user.Email = newUser.Email
 	user.Password = string(bytes)
+	user.Avatar = "default.png"
 
 	userService.userRepo.Save(&user)
 
@@ -75,7 +80,7 @@ func (userService *userService) Register(newUser *web.UserRegisterRequest) error
 func (userService *userService) Login(loginRequest *web.UserLoginRequest) (string, error) {
 	user, err := userService.userRepo.FindByEmail(loginRequest.Email)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password))
@@ -108,6 +113,34 @@ func (userService *userService) ForgotPassword(resetRequest *web.UserResetReques
 	if err != nil {
 		panic(err)
 	}
+	return nil
+}
+
+func (userService *userService) UpdateAvatar(userId string, updateAvatarRequest *web.UserAvatarRequest) error {
+	user := userService.userRepo.FindById(userId)
+
+	index := strings.Index(updateAvatarRequest.Avatar, "/")
+	dataImage := updateAvatarRequest.Avatar[0:index]
+
+	if dataImage != "data:image" {
+		return errors.New("error")
+	}
+
+	imageName, err := utils.DecodeImage(updateAvatarRequest.Avatar)
+	if err != nil {
+		return err
+	}
+
+	oldImage := user.Avatar
+	user.Avatar = imageName
+
+	userService.userRepo.UpdateAvatar(&user)
+
+	if oldImage != "default.png" {
+		err := os.Remove("./resources/avatar/" + oldImage)
+		utils.PanicIfError(err)
+	}
+
 	return nil
 }
 

@@ -296,6 +296,45 @@
         }
       }
     },
+    "/user/update-avatar": {
+      "put": {
+        "security": [
+          {
+            "SimpanUangAuth": []
+          }
+        ],
+        "tags": ["User"],
+        "summary": "Update Avatar Image User",
+        "description": "Update avatar image user using base64",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "avatar": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success Update Avatar",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SucessMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/piggy-bank": {
       "get": {
         "security": [
@@ -384,9 +423,6 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/piggyBankId"
-          },
-          {
-            "$ref": "#/components/parameters/size"
           },
           {
             "$ref": "#/components/parameters/page"
@@ -494,7 +530,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DepositOrWithdraw"
+                "$ref": "#/components/schemas/Deposit"
               }
             }
           }
@@ -533,7 +569,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DepositOrWithdraw"
+                "$ref": "#/components/schemas/Withdraw"
               }
             }
           }
@@ -742,9 +778,6 @@
             "$ref": "#/components/parameters/wishlistId"
           },
           {
-            "$ref": "#/components/parameters/size"
-          },
-          {
             "$ref": "#/components/parameters/page"
           }
         ],
@@ -850,7 +883,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DepositOrWithdraw"
+                "$ref": "#/components/schemas/Deposit"
               }
             }
           }
@@ -889,7 +922,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DepositOrWithdraw"
+                "$ref": "#/components/schemas/Withdraw"
               }
             }
           }
@@ -1055,15 +1088,6 @@
           "type": "string"
         }
       },
-      "size": {
-        "name": "size",
-        "in": "query",
-        "required": false,
-        "description": "limit for pagination",
-        "schema": {
-          "type": "number"
-        }
-      },
       "page": {
         "name": "page",
         "in": "query",
@@ -1130,11 +1154,22 @@
           }
         }
       },
-      "DepositOrWithdraw": {
+      "Deposit": {
         "type": "object",
         "properties": {
           "amount": {
             "type": "number"
+          }
+        }
+      },
+      "Withdraw": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "transaction_name": {
+            "type": "string"
           }
         }
       },
