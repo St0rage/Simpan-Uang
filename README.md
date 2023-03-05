@@ -13,7 +13,7 @@ CREATE TABLE users (
 	email VARCHAR(50) NOT NULL,
 	password CHAR(76) NOT NULL,
 	is_admin BOOL NOT NULL,
-	
+
 	PRIMARY KEY(id)
 );
 
@@ -22,7 +22,7 @@ CREATE TABLE piggy_bank (
 	user_id VARCHAR(50) NOT NULL,
 	piggy_bank_name VARCHAR(15) NOT NULL,
 	type BOOL NOT NULL,
-	
+
 	PRIMARY KEY(id),
 	FOREIGN KEY(user_id) REFERENCES users(id)
 );
@@ -34,7 +34,7 @@ CREATE TABLE piggy_bank_transaction (
 	amount NUMERIC(15, 2),
 	status BOOL NOT NULL,
 	date INT NOT NULL,
-	
+
 	PRIMARY KEY(id),
 	FOREIGN KEY(piggy_bank_id) REFERENCES piggy_bank(id) ON DELETE CASCADE
 );
@@ -45,7 +45,7 @@ CREATE TABLE wishlist (
 	wishlist_name VARCHAR(15) NOT NULL,
 	wishlist_target NUMERIC(15,2) NOT NULL,
 	progress INT NOT NULL,
-	
+
 	PRIMARY KEY(id),
 	FOREIGN KEY(user_id) REFERENCES users(id)
 );
@@ -57,7 +57,7 @@ CREATE TABLE wishlist_transaction (
 	amount NUMERIC(15, 2),
 	status BOOL NOT NULL,
 	date INT NOT NULL,
-	
+
 	PRIMARY KEY(id),
 	FOREIGN KEY(wishlist_id) REFERENCES wishlist(id) ON DELETE CASCADE
 );

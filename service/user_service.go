@@ -22,12 +22,15 @@ type UserService interface {
 	ChangePassword(userId string, changePasswordRequest *web.UserChangePasswordRequest)
 	UpdateUser(userId string, userUpdateRequest *web.UserUpdateRequest) error
 	CheckAdmin(userId string) bool
+	GetBalance(userId string) float32
 }
 
 type userService struct {
-	userRepo  repository.UserRepository
-	tokenServ authenticator.AccessToken
-	mailServ  mailer.MailService
+	userRepo         repository.UserRepository
+	piggyBankService PiggyBankService
+	wishlistService  WishlistService
+	tokenServ        authenticator.AccessToken
+	mailServ         mailer.MailService
 }
 
 func (userService *userService) GetUser(userId string) web.UserResponse {
@@ -38,7 +41,7 @@ func (userService *userService) GetUser(userId string) web.UserResponse {
 	userResponse.Name = user.Name
 	userResponse.Email = user.Email
 	userResponse.IsAdmin = user.IsAdmin
-	userResponse.Balance = 0
+	userResponse.Balance = userService.GetBalance(userId)
 
 	return userResponse
 }
@@ -141,10 +144,19 @@ func (userService *userService) CheckAdmin(userId string) bool {
 	return userService.userRepo.IsAdmin(userId)
 }
 
-func NewUserService(userRepo repository.UserRepository, tokenServ authenticator.AccessToken, mailServ mailer.MailService) UserService {
+func (userService *userService) GetBalance(userId string) float32 {
+	piggyBankTotal := userService.piggyBankService.GetAllPiggyBankTotal(userId)
+	wishlistTotal := userService.wishlistService.GetAllWishlistTotal(userId)
+
+	return piggyBankTotal + wishlistTotal
+}
+
+func NewUserService(userRepo repository.UserRepository, piggyBankService PiggyBankService, wishlistService WishlistService, tokenServ authenticator.AccessToken, mailServ mailer.MailService) UserService {
 	return &userService{
-		userRepo:  userRepo,
-		tokenServ: tokenServ,
-		mailServ:  mailServ,
+		userRepo:         userRepo,
+		piggyBankService: piggyBankService,
+		wishlistService:  wishlistService,
+		tokenServ:        tokenServ,
+		mailServ:         mailServ,
 	}
 }

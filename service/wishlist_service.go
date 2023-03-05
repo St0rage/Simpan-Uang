@@ -2,6 +2,8 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 
 	"github.com/St0rage/Simpan-Uang/model/domain"
 	"github.com/St0rage/Simpan-Uang/model/web"
@@ -17,6 +19,7 @@ type WishlistService interface {
 	GetWishlistUser(wishlistId string) (string, error)
 	GetWishlistTarget(wishlistId string) float32
 	DeleteWishlist(userId string, wishlistId string)
+	GetAllWishlistTotal(userId string) float32
 }
 
 type wishlistService struct {
@@ -37,8 +40,8 @@ func (w *wishlistService) GetWishlist(userId string) ([]web.WishlistResponse, er
 		wishlistResponse[i].UserId = value.UserId
 		wishlistResponse[i].WishlistName = value.WishlistName
 		wishlistResponse[i].WishlistTarget = value.WishlistTarget
-		wishlistResponse[i].Progress = value.Progress
 		wishlistResponse[i].Total = w.wishlistTransService.GetWishlistTotal(value.Id)
+		wishlistResponse[i].Progress = 0
 	}
 	return wishlistResponse, nil
 }
@@ -62,18 +65,23 @@ func (w *wishlistService) CreateNewWishlist(userId string, wishlist *web.Wishlis
 }
 
 func (w *wishlistService) GetWishlistById(wishlistId string) web.WishlistResponse {
-	var WishlistResponse web.WishlistResponse
+	var wishlistResponse web.WishlistResponse
 
 	wishlist := w.wishlistRepo.FindById(wishlistId)
 
-	WishlistResponse.Id = wishlist.Id
-	WishlistResponse.UserId = wishlist.UserId
-	WishlistResponse.WishlistName = wishlist.WishlistName
-	WishlistResponse.WishlistTarget = wishlist.WishlistTarget
-	WishlistResponse.Progress = wishlist.Progress
-	WishlistResponse.Total = w.wishlistTransService.GetWishlistTotal(wishlist.Id)
+	wishlistResponse.Id = wishlist.Id
+	wishlistResponse.UserId = wishlist.UserId
+	wishlistResponse.WishlistName = wishlist.WishlistName
+	wishlistResponse.WishlistTarget = wishlist.WishlistTarget
+	wishlistResponse.Total = w.wishlistTransService.GetWishlistTotal(wishlist.Id)
 
-	return WishlistResponse
+	// Progress
+	rawProgress := (wishlistResponse.Total / wishlist.WishlistTarget) * 100
+	progress, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", rawProgress), 32)
+
+	wishlistResponse.Progress = float32(progress)
+
+	return wishlistResponse
 }
 
 func (w *wishlistService) UpdateWishlist(wishlistId string, wishlistUpdate *web.WishlistUpdateRequest) error {
@@ -114,6 +122,22 @@ func (w *wishlistService) DeleteWishlist(userId string, wishlistId string) {
 	}
 
 	w.wishlistRepo.Delete(wishlistId)
+}
+
+func (w *wishlistService) GetAllWishlistTotal(userId string) float32 {
+	wishlists, _ := w.wishlistRepo.GetAll(userId)
+	wishlistsTotal := make([]float32, len(wishlists))
+	var total float32
+
+	for i, wishlist := range wishlists {
+		wishlistsTotal[i] = w.wishlistTransService.GetWishlistTotal(wishlist.Id)
+	}
+
+	for _, wishlistTotal := range wishlistsTotal {
+		total += wishlistTotal
+	}
+
+	return total
 }
 
 func NewWishlistService(wishlistRepo repository.WishlistRepository, wishlistTransService WishlistTransactionService, piggyBankService PiggyBankService, piggyBankTransService PiggyBankTransactionService) WishlistService {

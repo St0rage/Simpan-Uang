@@ -31,7 +31,7 @@ const (
 	// END PIGGY BANK
 
 	// WHISLIST
-	INSERT_WISHLIST    = "INSERT INTO wishlist (id, user_id, wishlist_name, wishlist_target, progress) VALUES (:id, :user_id, :wishlist_name, :wishlist_target, :progress)"
+	INSERT_WISHLIST    = "INSERT INTO wishlist (id, user_id, wishlist_name, wishlist_target) VALUES (:id, :user_id, :wishlist_name, :wishlist_target)"
 	SELECT_WISHLIST    = "SELECT * FROM wishlist WHERE user_id = $1"
 	SELECT_WISHLIST_ID = "SELECT * FROM wishlist WHERE id = $1"
 
