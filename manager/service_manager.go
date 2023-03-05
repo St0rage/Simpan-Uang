@@ -25,7 +25,7 @@ type serviceManager struct {
 
 // UserService
 func (s *serviceManager) UserService() service.UserService {
-	return service.NewUserService(s.repoManager.UserRepo(), s.tokenServ, s.mailServ)
+	return service.NewUserService(s.repoManager.UserRepo(), s.PiggyBankService(), s.WishlistService(), s.tokenServ, s.mailServ)
 }
 
 // PiggyBankService

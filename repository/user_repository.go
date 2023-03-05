@@ -22,12 +22,18 @@ type userRepository struct {
 }
 
 func (userRepo *userRepository) Save(user *domain.User) {
-	userRepo.db.NamedExec(utils.INSERT_USER, &user)
+	_, err := userRepo.db.NamedExec(utils.INSERT_USER, &user)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (userRepo *userRepository) FindById(userId string) domain.User {
 	var user domain.User
-	userRepo.db.Get(&user, utils.SELECT_USER_ID, userId)
+	err := userRepo.db.Get(&user, utils.SELECT_USER_ID, userId)
+	if err != nil {
+		panic(err)
+	}
 
 	return user
 }

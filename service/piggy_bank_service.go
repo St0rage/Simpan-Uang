@@ -17,6 +17,7 @@ type PiggyBankService interface {
 	DeletePiggyBank(userId string, piggyBankId string) error
 	GetMainPiggyBank(userId string) string
 	GetPiggyBankUser(piggyBankId string) (string, error)
+	GetAllPiggyBankTotal(userId string) float32
 }
 
 type piggyBankService struct {
@@ -120,6 +121,22 @@ func (piggyBankService *piggyBankService) GetMainPiggyBank(userId string) string
 
 func (piggyBankService *piggyBankService) GetPiggyBankUser(piggyBankId string) (string, error) {
 	return piggyBankService.piggyBankRepo.CheckPiggyBankUser(piggyBankId)
+}
+
+func (piggyBankService *piggyBankService) GetAllPiggyBankTotal(userId string) float32 {
+	piggyBanks := piggyBankService.piggyBankRepo.FindAllByUserId(userId)
+	piggyBanksTotal := make([]float32, len(piggyBanks))
+	var total float32
+
+	for i, piggyBank := range piggyBanks {
+		piggyBanksTotal[i] = piggyBankService.piggyBankTransService.GetTotalAmount(piggyBank.Id)
+	}
+
+	for _, piggyBankTotal := range piggyBanksTotal {
+		total += piggyBankTotal
+	}
+
+	return total
 }
 
 func NewPiggyBankService(piggyBankRepo repository.PiggyBankRepository, piggyBankTransService PiggyBankTransactionService) PiggyBankService {
