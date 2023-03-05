@@ -13,6 +13,7 @@ CREATE TABLE users (
 	email VARCHAR(50) NOT NULL,
 	password CHAR(76) NOT NULL,
 	is_admin BOOL NOT NULL,
+	avatar VARCHAR(50) NOT NULL,
 
 	PRIMARY KEY(id)
 );
