@@ -20,12 +20,9 @@ type WishlistController struct {
 func (wc *WishlistController) GetWishlist(ctx *gin.Context) {
 	Userid := fmt.Sprintf("%v", ctx.MustGet("id"))
 
-	user, err := wc.wishlistService.GetWishlist(Userid)
-	if err != nil {
-		utils.HandleInternalServerError(ctx)
-	} else {
-		utils.HandleSuccess(ctx, user)
-	}
+	wishlists := wc.wishlistService.GetWishlist(Userid)
+
+	utils.HandleSuccess(ctx, "Berhasil get wishlist", wishlists)
 }
 
 func (wc *WishlistController) GetWishlistById(ctx *gin.Context) {
@@ -33,44 +30,40 @@ func (wc *WishlistController) GetWishlistById(ctx *gin.Context) {
 
 	wishlistRespone := wc.wishlistService.GetWishlistById(wishlistId)
 
-	utils.HandleSuccess(ctx, wishlistRespone)
+	utils.HandleSuccess(ctx, "Berhasil get detail wishlist", wishlistRespone)
 }
 
 func (wc *WishlistController) CreateNewWishlist(ctx *gin.Context) {
 	Userid := fmt.Sprintf("%v", ctx.MustGet("id"))
-	var wishlist *web.WishlistRequest
+	var wishlist *web.WishlistCreateUpdateRequest
 	err := ctx.ShouldBindJSON(&wishlist)
 	if err != nil {
-		utils.HandleInternalServerError(ctx)
+		getError := utils.CustomValidationErr(err)
+		utils.HandleBadRequest(ctx, "Validation error", getError)
 	} else {
-		err := wc.wishlistService.CreateNewWishlist(Userid, wishlist)
+		getError, err := wc.wishlistService.CreateNewWishlist(Userid, wishlist)
 		if err != nil {
-			utils.HandleBadRequest(ctx, gin.H{
-				"message": err.Error(),
-			})
+			utils.HandleBadRequest(ctx, "Validation error", getError)
 		} else {
-			utils.HandleSuccessCreated(ctx, wishlist)
+			utils.HandleSuccessCreated(ctx, "Wishlist berhasil dibuat", nil)
 		}
 	}
 }
 
 func (wc *WishlistController) UpdateWishlist(ctx *gin.Context) {
 	wishlistId := ctx.Param("wishlistId")
-	var wishlistUpdate *web.WishlistUpdateRequest
+	var wishlistUpdate *web.WishlistCreateUpdateRequest
 
 	err := ctx.ShouldBindJSON(&wishlistUpdate)
 	if err != nil {
-		utils.HandleBadRequest(ctx, err.Error())
+		getError := utils.CustomValidationErr(err)
+		utils.HandleBadRequest(ctx, "Validation error", getError)
 	} else {
-		err := wc.wishlistService.UpdateWishlist(wishlistId, wishlistUpdate)
+		getError, err := wc.wishlistService.UpdateWishlist(wishlistId, wishlistUpdate)
 		if err != nil {
-			utils.HandleBadRequest(ctx, gin.H{
-				"message": err.Error(),
-			})
+			utils.HandleBadRequest(ctx, "Validation error", getError)
 		} else {
-			utils.HandleSuccess(ctx, gin.H{
-				"message": "Wishlist berhasil diupdate",
-			})
+			utils.HandleSuccess(ctx, "Wishlist berhasil diupdate", nil)
 		}
 	}
 }
@@ -80,9 +73,7 @@ func (wc *WishlistController) DeleteWishlist(ctx *gin.Context) {
 	wishlistId := ctx.Param("wishlistId")
 
 	wc.wishlistService.DeleteWishlist(userId, wishlistId)
-	utils.HandleSuccess(ctx, gin.H{
-		"message": "Tabungan Berhasil dihapus",
-	})
+	utils.HandleSuccess(ctx, "Wishlist Berhasil dihapus", nil)
 
 }
 
@@ -93,17 +84,14 @@ func (wc *WishlistController) DepositWishlist(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&depositTransaction)
 	if err != nil {
-		utils.HandleBadRequest(ctx, err.Error())
+		getError := utils.CustomValidationErr(err)
+		utils.HandleBadRequest(ctx, "Validation error", getError)
 	} else {
-		err := wc.wishlistTransService.DepositWishlist(wishlistId, wishlistTarget, depositTransaction)
+		getError, err := wc.wishlistTransService.DepositWishlist(wishlistId, wishlistTarget, depositTransaction)
 		if err != nil {
-			utils.HandleBadRequest(ctx, gin.H{
-				"message": err.Error(),
-			})
+			utils.HandleBadRequest(ctx, "Validation Error", getError)
 		} else {
-			utils.HandleSuccessCreated(ctx, gin.H{
-				"message": "Transaksi Sebesar " + strconv.Itoa(int(depositTransaction.Amount)) + " Berhasil Masuk",
-			})
+			utils.HandleSuccessCreated(ctx, "Transaksi Sebesar Rp "+strconv.Itoa(int(depositTransaction.Amount.(float64)))+" Berhasil Masuk", nil)
 		}
 	}
 }
@@ -114,17 +102,14 @@ func (wc *WishlistController) WithdrawWishlist(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&withdrawTransaction)
 	if err != nil {
-		utils.HandleBadRequest(ctx, err.Error())
+		getError := utils.CustomValidationErr(err)
+		utils.HandleBadRequest(ctx, "Validation Error", getError)
 	} else {
-		err := wc.wishlistTransService.WithdrawWishlist(wishlistId, withdrawTransaction)
+		getError, err := wc.wishlistTransService.WithdrawWishlist(wishlistId, withdrawTransaction)
 		if err != nil {
-			utils.HandleBadRequest(ctx, gin.H{
-				"message": err.Error(),
-			})
+			utils.HandleBadRequest(ctx, "Validation Error", getError)
 		} else {
-			utils.HandleSuccessCreated(ctx, gin.H{
-				"message": "Transaksi Sebesar " + strconv.Itoa(int(withdrawTransaction.Amount)) + " Berhasil ditarik",
-			})
+			utils.HandleSuccessCreated(ctx, "Transaksi Sebesar Rp "+strconv.Itoa(int(withdrawTransaction.Amount.(float64)))+" Berhasil ditarik", nil)
 		}
 	}
 }
@@ -138,7 +123,7 @@ func (wc *WishlistController) GetWishlistTransactions(ctx *gin.Context) {
 
 	transactions := wc.wishlistTransService.GetWishlistTransaction(wishlistId, page)
 
-	utils.HandleSuccess(ctx, transactions)
+	utils.HandleSuccess(ctx, "Berhasil get transaksi wishlist", transactions)
 }
 
 func (wc *WishlistController) DeleteWishlistTransactions(ctx *gin.Context) {
@@ -147,13 +132,9 @@ func (wc *WishlistController) DeleteWishlistTransactions(ctx *gin.Context) {
 
 	err := wc.wishlistTransService.DeleteTransaction(wishlistTransId, wishlistId)
 	if err != nil {
-		utils.HandleBadRequest(ctx, gin.H{
-			"message": err.Error(),
-		})
+		utils.HandleBadRequest(ctx, err.Error(), nil)
 	} else {
-		utils.HandleSuccess(ctx, gin.H{
-			"message": "Transaksi berhasil dihapus",
-		})
+		utils.HandleSuccess(ctx, "Transaksi berhasil dihapus", nil)
 	}
 }
 

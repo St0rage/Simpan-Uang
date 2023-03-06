@@ -18,12 +18,12 @@ import (
 
 type UserService interface {
 	GetUser(userId string) web.UserResponse
-	Register(newUser *web.UserRegisterRequest) error
+	Register(newUser *web.UserRegisterRequest) (map[string]string, error)
 	Login(loginRequest *web.UserLoginRequest) (string, error)
-	ForgotPassword(resetRequest *web.UserResetRequest) error
+	ForgotPassword(resetRequest *web.UserResetRequest) (map[string]string, error)
 	ChangePassword(userId string, changePasswordRequest *web.UserChangePasswordRequest)
-	UpdateAvatar(userId string, updateAvatarRequest *web.UserAvatarRequest) error
-	UpdateUser(userId string, userUpdateRequest *web.UserUpdateRequest) error
+	UpdateAvatar(userId string, updateAvatarRequest *web.UserAvatarRequest) (map[string]string, error)
+	UpdateUser(userId string, userUpdateRequest *web.UserUpdateRequest) (map[string]string, error)
 	CheckAdmin(userId string) bool
 	GetBalance(userId string) float32
 }
@@ -50,10 +50,12 @@ func (userService *userService) GetUser(userId string) web.UserResponse {
 	return userResponse
 }
 
-func (userService *userService) Register(newUser *web.UserRegisterRequest) error {
+func (userService *userService) Register(newUser *web.UserRegisterRequest) (map[string]string, error) {
 	emailExist := userService.userRepo.CheckEmail(newUser.Email)
 	if emailExist {
-		return errors.New("email sudah digunakan")
+		return map[string]string{
+			"email": "email sudah digunakan",
+		}, errors.New("error")
 	}
 
 	var user domain.User
@@ -74,7 +76,7 @@ func (userService *userService) Register(newUser *web.UserRegisterRequest) error
 
 	userService.userRepo.Save(&user)
 
-	return nil
+	return nil, nil
 }
 
 func (userService *userService) Login(loginRequest *web.UserLoginRequest) (string, error) {
@@ -96,10 +98,12 @@ func (userService *userService) Login(loginRequest *web.UserLoginRequest) (strin
 	return token, nil
 }
 
-func (userService *userService) ForgotPassword(resetRequest *web.UserResetRequest) error {
+func (userService *userService) ForgotPassword(resetRequest *web.UserResetRequest) (map[string]string, error) {
 	user, err := userService.userRepo.FindByEmail(resetRequest.Email)
 	if err != nil {
-		return err
+		return map[string]string{
+			"email": "email tidak ditemukan",
+		}, errors.New("error")
 	}
 
 	generatePassword := strconv.Itoa(rand.Intn(100000))
@@ -113,22 +117,31 @@ func (userService *userService) ForgotPassword(resetRequest *web.UserResetReques
 	if err != nil {
 		panic(err)
 	}
-	return nil
+	return nil, nil
 }
 
-func (userService *userService) UpdateAvatar(userId string, updateAvatarRequest *web.UserAvatarRequest) error {
+func (userService *userService) UpdateAvatar(userId string, updateAvatarRequest *web.UserAvatarRequest) (map[string]string, error) {
 	user := userService.userRepo.FindById(userId)
 
 	index := strings.Index(updateAvatarRequest.Avatar, "/")
+	if index != 10 {
+		return map[string]string{
+			"avatar": "format gambar tidak valid",
+		}, errors.New("error")
+	}
 	dataImage := updateAvatarRequest.Avatar[0:index]
 
 	if dataImage != "data:image" {
-		return errors.New("error")
+		return map[string]string{
+			"avatar": "format gambar tidak valid",
+		}, errors.New("error")
 	}
 
 	imageName, err := utils.DecodeImage(updateAvatarRequest.Avatar)
 	if err != nil {
-		return err
+		return map[string]string{
+			"avatar": "format gambar tidak valid",
+		}, errors.New("error")
 	}
 
 	oldImage := user.Avatar
@@ -137,11 +150,10 @@ func (userService *userService) UpdateAvatar(userId string, updateAvatarRequest 
 	userService.userRepo.UpdateAvatar(&user)
 
 	if oldImage != "default.png" {
-		err := os.Remove("./resources/avatar/" + oldImage)
-		utils.PanicIfError(err)
+		os.Remove("./resources/avatar/" + oldImage)
 	}
 
-	return nil
+	return nil, nil
 }
 
 func (userService *userService) ChangePassword(userId string, changePasswordRequest *web.UserChangePasswordRequest) {
@@ -154,13 +166,15 @@ func (userService *userService) ChangePassword(userId string, changePasswordRequ
 	userService.userRepo.UpdatePassword(&user)
 }
 
-func (userService *userService) UpdateUser(userId string, userUpdateRequest *web.UserUpdateRequest) error {
+func (userService *userService) UpdateUser(userId string, userUpdateRequest *web.UserUpdateRequest) (map[string]string, error) {
 	user := userService.userRepo.FindById(userId)
 
 	if userUpdateRequest.Email != user.Email {
 		exist := userService.userRepo.CheckEmail(userUpdateRequest.Email)
 		if exist {
-			return errors.New("email sudah digunakan")
+			return map[string]string{
+				"email": "email sudah digunakan",
+			}, errors.New("")
 		} else {
 			user.Email = userUpdateRequest.Email
 		}
@@ -170,7 +184,7 @@ func (userService *userService) UpdateUser(userId string, userUpdateRequest *web
 
 	userService.userRepo.Update(&user)
 
-	return nil
+	return nil, nil
 }
 
 func (userService *userService) CheckAdmin(userId string) bool {

@@ -1,6 +1,6 @@
 package web
 
 type WithdrawTransactionRequest struct {
-	Amount          float32 `json:"amount" binding:"required,numeric"`
-	TransactionName string  `json:"transaction_name" binding:"required,min=3,max=15"`
+	Amount          any    `json:"amount" binding:"required,numeric,gt=500"`
+	TransactionName string `json:"transaction_name" binding:"required,min=3,max=15"`
 }

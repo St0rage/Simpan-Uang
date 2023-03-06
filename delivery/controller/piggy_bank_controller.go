@@ -24,17 +24,14 @@ func (pc *PiggyBankController) CreatePiggyBank(ctx *gin.Context) {
 	var newPiggyBank *web.PiggyBankCreateUpdateRequest
 	err := ctx.ShouldBindJSON(&newPiggyBank)
 	if err != nil {
-		utils.HandleBadRequest(ctx, err.Error())
+		getError := utils.CustomValidationErr(err)
+		utils.HandleBadRequest(ctx, "Validation Error", getError)
 	} else {
-		err := pc.piggyBankService.CreatePiggyBank(userId, newPiggyBank)
+		getError, err := pc.piggyBankService.CreatePiggyBank(userId, newPiggyBank)
 		if err != nil {
-			utils.HandleBadRequest(ctx, gin.H{
-				"message": err.Error(),
-			})
+			utils.HandleBadRequest(ctx, "Validation Error", getError)
 		} else {
-			utils.HandleSuccessCreated(ctx, gin.H{
-				"message": "Tabungan berhasil dibuat",
-			})
+			utils.HandleSuccessCreated(ctx, "Tabungan berhasil dibuat", nil)
 		}
 	}
 }
@@ -44,7 +41,7 @@ func (pc *PiggyBankController) GetPiggyBanks(ctx *gin.Context) {
 
 	piggyBankReponses := pc.piggyBankService.GetAllPiggyBank(userId)
 
-	utils.HandleSuccess(ctx, piggyBankReponses)
+	utils.HandleSuccess(ctx, "Berhasil get tabungan", piggyBankReponses)
 }
 
 func (pc *PiggyBankController) GetPiggyBankById(ctx *gin.Context) {
@@ -52,7 +49,7 @@ func (pc *PiggyBankController) GetPiggyBankById(ctx *gin.Context) {
 
 	piggyBankRespone := pc.piggyBankService.GetPiggyBankById(piggyBankId)
 
-	utils.HandleSuccess(ctx, piggyBankRespone)
+	utils.HandleSuccess(ctx, "Berhasil get detail tabungan", piggyBankRespone)
 }
 
 func (pc *PiggyBankController) UpdatePiggyBank(ctx *gin.Context) {
@@ -61,17 +58,14 @@ func (pc *PiggyBankController) UpdatePiggyBank(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&piggyBankUpdate)
 	if err != nil {
-		utils.HandleBadRequest(ctx, err.Error())
+		getError := utils.CustomValidationErr(err)
+		utils.HandleBadRequest(ctx, "Validation Error", getError)
 	} else {
-		err := pc.piggyBankService.UpdatePiggyBank(piggyBankId, piggyBankUpdate)
+		getError, err := pc.piggyBankService.UpdatePiggyBank(piggyBankId, piggyBankUpdate)
 		if err != nil {
-			utils.HandleBadRequest(ctx, gin.H{
-				"message": err.Error(),
-			})
+			utils.HandleBadRequest(ctx, "Validation Error", getError)
 		} else {
-			utils.HandleSuccess(ctx, gin.H{
-				"message": "Tabungan berhasil diupdate",
-			})
+			utils.HandleSuccess(ctx, "Tabungan berhasil diupdate", nil)
 		}
 	}
 }
@@ -82,13 +76,9 @@ func (pc *PiggyBankController) DeletePiggyBank(ctx *gin.Context) {
 
 	err := pc.piggyBankService.DeletePiggyBank(userId, piggyBankId)
 	if err != nil {
-		utils.HandleBadRequest(ctx, gin.H{
-			"message": err.Error(),
-		})
+		utils.HandleBadRequest(ctx, err.Error(), nil)
 	} else {
-		utils.HandleSuccess(ctx, gin.H{
-			"message": "Tabungan Berhasil dihapus",
-		})
+		utils.HandleSuccess(ctx, "Tabungan Berhasil dihapus", nil)
 	}
 
 }
@@ -100,18 +90,11 @@ func (pc *PiggyBankController) DepositPiggyBank(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&depositTransaction)
 	if err != nil {
-		utils.HandleBadRequest(ctx, err.Error())
+		getError := utils.CustomValidationErr(err)
+		utils.HandleBadRequest(ctx, "Validation Error", getError)
 	} else {
-		err := pc.piggyBankTransService.DepositTransaction(piggyBankId, depositTransaction)
-		if err != nil {
-			utils.HandleBadRequest(ctx, gin.H{
-				"message": err.Error(),
-			})
-		} else {
-			utils.HandleSuccessCreated(ctx, gin.H{
-				"message": "Transaksi Sebesar " + strconv.Itoa(int(depositTransaction.Amount)) + " Berhasil Masuk",
-			})
-		}
+		pc.piggyBankTransService.DepositTransaction(piggyBankId, depositTransaction)
+		utils.HandleSuccessCreated(ctx, "Transaksi Sebesar Rp "+strconv.Itoa(int(depositTransaction.Amount.(float64)))+" Berhasil Masuk", nil)
 	}
 }
 
@@ -121,17 +104,14 @@ func (pc *PiggyBankController) WithdrawPiggyBank(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&withdrawTransaction)
 	if err != nil {
-		utils.HandleBadRequest(ctx, err.Error())
+		getError := utils.CustomValidationErr(err)
+		utils.HandleBadRequest(ctx, "Validation Error", getError)
 	} else {
-		err := pc.piggyBankTransService.WithdrawTransaction(piggyBankId, withdrawTransaction)
+		getError, err := pc.piggyBankTransService.WithdrawTransaction(piggyBankId, withdrawTransaction)
 		if err != nil {
-			utils.HandleBadRequest(ctx, gin.H{
-				"message": err.Error(),
-			})
+			utils.HandleBadRequest(ctx, "Validation Error", getError)
 		} else {
-			utils.HandleSuccessCreated(ctx, gin.H{
-				"message": "Transaksi Sebesar " + strconv.Itoa(int(withdrawTransaction.Amount)) + " Berhasil ditarik",
-			})
+			utils.HandleSuccessCreated(ctx, "Transaksi Sebesar Rp "+strconv.Itoa(int(withdrawTransaction.Amount.(float64)))+" Berhasil ditarik", nil)
 		}
 	}
 }
@@ -145,7 +125,7 @@ func (pc *PiggyBankController) GetPiggyBankTransactions(ctx *gin.Context) {
 
 	transactions := pc.piggyBankTransService.GetAllTransactions(piggyBankId, page)
 
-	utils.HandleSuccess(ctx, transactions)
+	utils.HandleSuccess(ctx, "Berhasil get transaksi tabungan", transactions)
 }
 
 func (pc *PiggyBankController) DeletePiggyBankTransactions(ctx *gin.Context) {
@@ -154,13 +134,9 @@ func (pc *PiggyBankController) DeletePiggyBankTransactions(ctx *gin.Context) {
 
 	err := pc.piggyBankTransService.DeleteTransaction(piggyBankTransId, piggyBankId)
 	if err != nil {
-		utils.HandleBadRequest(ctx, gin.H{
-			"message": err.Error(),
-		})
+		utils.HandleBadRequest(ctx, err.Error(), nil)
 	} else {
-		utils.HandleSuccess(ctx, gin.H{
-			"message": "Transaksi berhasil dihapus",
-		})
+		utils.HandleSuccess(ctx, "Transaksi berhasil dihapus", nil)
 	}
 }
 

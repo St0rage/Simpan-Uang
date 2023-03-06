@@ -12,8 +12,8 @@ import (
 )
 
 type PiggyBankTransactionService interface {
-	DepositTransaction(piggyBankId string, depositRequest *web.DepositTransactionRequest) error
-	WithdrawTransaction(piggyBankId string, withdrawRequest *web.WithdrawTransactionRequest) error
+	DepositTransaction(piggyBankId string, depositRequest *web.DepositTransactionRequest)
+	WithdrawTransaction(piggyBankId string, withdrawRequest *web.WithdrawTransactionRequest) (map[string]string, error)
 	TransferTransaction(userId string, mainPiggyBankId string, transferRequest *web.TransferTransactionRequest)
 	DeleteTransaction(piggyBankTransId string, piggyBankId string) error
 	GetAllTransactions(piggyBankId string, page int) []domain.PiggyBankTransaction
@@ -24,34 +24,33 @@ type piggyBankTransactionService struct {
 	piggyBankTransRepo repository.PiggyBankTransactionRepository
 }
 
-func (piggyBankTransService *piggyBankTransactionService) DepositTransaction(piggyBankId string, depositRequest *web.DepositTransactionRequest) error {
-	if depositRequest.Amount < 500 {
-		return errors.New("minimal deposit Rp 500")
-	}
-
+func (piggyBankTransService *piggyBankTransactionService) DepositTransaction(piggyBankId string, depositRequest *web.DepositTransactionRequest) {
 	var piggyBankTransaction domain.PiggyBankTransaction
 
 	piggyBankTransaction.Id = utils.GenerateId()
 	piggyBankTransaction.PiggyBankId = piggyBankId
 	piggyBankTransaction.TransactionName = "Tambah Saldo"
-	piggyBankTransaction.Amount = depositRequest.Amount
+	piggyBankTransaction.Amount = float32((depositRequest.Amount.(float64)))
 	piggyBankTransaction.Status = true
 	piggyBankTransaction.Date = time.Now().Unix()
 
 	piggyBankTransService.piggyBankTransRepo.Save(&piggyBankTransaction)
 
-	return nil
 }
 
-func (piggyBankTransService *piggyBankTransactionService) WithdrawTransaction(piggyBankId string, withdrawRequest *web.WithdrawTransactionRequest) error {
+func (piggyBankTransService *piggyBankTransactionService) WithdrawTransaction(piggyBankId string, withdrawRequest *web.WithdrawTransactionRequest) (map[string]string, error) {
 	total := piggyBankTransService.GetTotalAmount(piggyBankId)
 
+	amount := float32(withdrawRequest.Amount.(float64))
+
 	if total == 0 {
-		return errors.New("withdraw gagal saldo tidak mencukupi")
-	} else if withdrawRequest.Amount < 500 {
-		return errors.New("minimal withdraw Rp 500")
-	} else if withdrawRequest.Amount > total {
-		return errors.New("Gagal, penarikan tidak boleh lebih dari Rp " + strconv.Itoa(int(total)))
+		return map[string]string{
+			"amount": "withdraw gagal saldo tidak mencukupi",
+		}, errors.New("error")
+	} else if amount > total {
+		return map[string]string{
+			"amount": "Gagal, penarikan tidak boleh lebih dari Rp " + strconv.Itoa(int(total)),
+		}, errors.New("error")
 	}
 
 	var piggyBankTransaction domain.PiggyBankTransaction
@@ -59,13 +58,13 @@ func (piggyBankTransService *piggyBankTransactionService) WithdrawTransaction(pi
 	piggyBankTransaction.Id = utils.GenerateId()
 	piggyBankTransaction.PiggyBankId = piggyBankId
 	piggyBankTransaction.TransactionName = withdrawRequest.TransactionName
-	piggyBankTransaction.Amount = 0 - withdrawRequest.Amount
+	piggyBankTransaction.Amount = 0 - amount
 	piggyBankTransaction.Status = false
 	piggyBankTransaction.Date = time.Now().Unix()
 
 	piggyBankTransService.piggyBankTransRepo.Save(&piggyBankTransaction)
 
-	return nil
+	return nil, nil
 }
 
 func (piggyBankTransService *piggyBankTransactionService) TransferTransaction(userId string, mainPiggyBankId string, transferRequest *web.TransferTransactionRequest) {
@@ -93,7 +92,11 @@ func (piggyBankTransService *piggyBankTransactionService) DeleteTransaction(pigg
 }
 
 func (piggyBankTransService *piggyBankTransactionService) GetAllTransactions(piggyBankId string, page int) []domain.PiggyBankTransaction {
-	return piggyBankTransService.piggyBankTransRepo.FindAll(piggyBankId, page)
+	transactions := piggyBankTransService.piggyBankTransRepo.FindAll(piggyBankId, page)
+	if transactions != nil {
+		return transactions
+	}
+	return []domain.PiggyBankTransaction{}
 }
 
 func (piggyBankTransService *piggyBankTransactionService) GetTotalAmount(piggyBankId string) float32 {
