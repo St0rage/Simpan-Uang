@@ -12,8 +12,8 @@ import (
 )
 
 type WishlistTransactionService interface {
-	DepositWishlist(wishlistId string, wishlistTarget float32, depositRequest *web.DepositTransactionRequest) error
-	WithdrawWishlist(wishlistId string, withdrawRequest *web.WithdrawTransactionRequest) error
+	DepositWishlist(wishlistId string, wishlistTarget float32, depositRequest *web.DepositTransactionRequest) (map[string]string, error)
+	WithdrawWishlist(wishlistId string, withdrawRequest *web.WithdrawTransactionRequest) (map[string]string, error)
 	GetWishlistTransaction(wishlistId string, page int) []domain.WishlistTransaction
 	GetWishlistTotal(wishlistId string) float32
 	DeleteTransaction(wishlistTransId string, wishlistId string) error
@@ -23,41 +23,51 @@ type wishlistTransactionService struct {
 	wishlistTransRepo repository.WishlistTransactionRepository
 }
 
-func (wishlistTransService *wishlistTransactionService) DepositWishlist(wishlistId string, wishlistTarget float32, depositRequest *web.DepositTransactionRequest) error {
+func (wishlistTransService *wishlistTransactionService) DepositWishlist(wishlistId string, wishlistTarget float32, depositRequest *web.DepositTransactionRequest) (map[string]string, error) {
 	total := wishlistTransService.GetWishlistTotal(wishlistId)
 
-	if depositRequest.Amount < 500 {
-		return errors.New("minimal deposit Rp 500")
-	} else if total == wishlistTarget {
-		return errors.New("wishlist sudah mencapai target")
-	} else if depositRequest.Amount > wishlistTarget {
-		return errors.New("jumlah deposit melebihi target")
-	} else if (depositRequest.Amount + total) > wishlistTarget {
-		return errors.New("jumlah deposit melebihi target")
+	amount := float32(depositRequest.Amount.(float64))
+
+	if total == wishlistTarget {
+		return map[string]string{
+			"amount": "wishlist sudah mencapai target",
+		}, errors.New("error")
+	} else if amount > wishlistTarget {
+		return map[string]string{
+			"amount": "jumlah deposit melebihi target",
+		}, errors.New("error")
+	} else if (amount + total) > wishlistTarget {
+		return map[string]string{
+			"amount": "jumlah deposit melebihi target",
+		}, errors.New("error")
 	}
 	var wishlistTransaction domain.WishlistTransaction
 
 	wishlistTransaction.Id = utils.GenerateId()
 	wishlistTransaction.WishlistId = wishlistId
 	wishlistTransaction.TransactionName = "Tambah Saldo"
-	wishlistTransaction.Amount = depositRequest.Amount
+	wishlistTransaction.Amount = amount
 	wishlistTransaction.Status = true
 	wishlistTransaction.Date = time.Now().Unix()
 
 	wishlistTransService.wishlistTransRepo.Save(&wishlistTransaction)
 
-	return nil
+	return nil, nil
 }
 
-func (wishlistTransService *wishlistTransactionService) WithdrawWishlist(wishlistId string, withdrawRequest *web.WithdrawTransactionRequest) error {
+func (wishlistTransService *wishlistTransactionService) WithdrawWishlist(wishlistId string, withdrawRequest *web.WithdrawTransactionRequest) (map[string]string, error) {
 	total := wishlistTransService.GetWishlistTotal(wishlistId)
 
+	amount := float32(withdrawRequest.Amount.(float64))
+
 	if total == 0 {
-		return errors.New("withdraw gagal saldo tidak mencukupi")
-	} else if withdrawRequest.Amount < 500 {
-		return errors.New("minimal withdraw Rp 500")
-	} else if withdrawRequest.Amount > total {
-		return errors.New("Gagal, penarikan tidak boleh lebih dari Rp " + strconv.Itoa(int(total)))
+		return map[string]string{
+			"amount": "withdraw gagal saldo tidak mencukupi",
+		}, errors.New("error")
+	} else if amount > total {
+		return map[string]string{
+			"amount": "Gagal, penarikan tidak boleh lebih dari Rp " + strconv.Itoa(int(total)),
+		}, errors.New("error")
 	}
 
 	var wishlistTransaction domain.WishlistTransaction
@@ -65,13 +75,13 @@ func (wishlistTransService *wishlistTransactionService) WithdrawWishlist(wishlis
 	wishlistTransaction.Id = utils.GenerateId()
 	wishlistTransaction.WishlistId = wishlistId
 	wishlistTransaction.TransactionName = withdrawRequest.TransactionName
-	wishlistTransaction.Amount = 0 - withdrawRequest.Amount
+	wishlistTransaction.Amount = 0 - amount
 	wishlistTransaction.Status = false
 	wishlistTransaction.Date = time.Now().Unix()
 
 	wishlistTransService.wishlistTransRepo.Save(&wishlistTransaction)
 
-	return nil
+	return nil, nil
 }
 
 func (wishlistTransService *wishlistTransactionService) GetWishlistTotal(wishlistId string) float32 {
@@ -86,7 +96,12 @@ func (wishlistTransService *wishlistTransactionService) GetWishlistTotal(wishlis
 }
 
 func (wishlistTransService *wishlistTransactionService) GetWishlistTransaction(wishlistId string, page int) []domain.WishlistTransaction {
-	return wishlistTransService.wishlistTransRepo.GetAll(wishlistId, page)
+	transactions := wishlistTransService.wishlistTransRepo.GetAll(wishlistId, page)
+	if transactions != nil {
+		return transactions
+	}
+
+	return []domain.WishlistTransaction{}
 }
 
 func (wishlistTransService *wishlistTransactionService) DeleteTransaction(wishlistTransId string, wishlistId string) error {

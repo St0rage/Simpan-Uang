@@ -20,24 +20,21 @@ func (uc *UserController) getUser(ctx *gin.Context) {
 
 	user := uc.service.GetUser(userId)
 
-	utils.HandleSuccess(ctx, user)
+	utils.HandleSuccess(ctx, "Berhasil get user", user)
 }
 
 func (uc *UserController) registerUser(ctx *gin.Context) {
 	var newUserRequest *web.UserRegisterRequest
 	err := ctx.ShouldBindJSON(&newUserRequest)
 	if err != nil {
-		utils.HandleBadRequest(ctx, err.Error())
+		getError := utils.CustomValidationErr(err)
+		utils.HandleBadRequest(ctx, "Validation error", getError)
 	} else {
-		err := uc.service.Register(newUserRequest)
+		getError, err := uc.service.Register(newUserRequest)
 		if err != nil {
-			utils.HandleBadRequest(ctx, gin.H{
-				"message": err.Error(),
-			})
+			utils.HandleBadRequest(ctx, "Validation Error", getError)
 		} else {
-			utils.HandleSuccessCreated(ctx, gin.H{
-				"message": "User berhasil dibuat",
-			})
+			utils.HandleSuccessCreated(ctx, "User berhasil dibuat", nil)
 		}
 	}
 }
@@ -46,17 +43,15 @@ func (uc *UserController) loginUser(ctx *gin.Context) {
 	var loginRequest *web.UserLoginRequest
 	err := ctx.ShouldBindJSON(&loginRequest)
 	if err != nil {
-		utils.HandleBadRequest(ctx, err.Error())
+		getError := utils.CustomValidationErr(err)
+		utils.HandleBadRequest(ctx, "Validation error", getError)
 	} else {
 		token, err := uc.service.Login(loginRequest)
 		if err != nil {
-			utils.HandleBadRequest(ctx, gin.H{
-				"message": "Email atau Password salah",
-			})
+			utils.HandleBadRequest(ctx, "Email atau Password salah", nil)
 		} else {
-			utils.HandleSuccess(ctx, gin.H{
-				"message": "Login Berhasil",
-				"token":   token,
+			utils.HandleSuccess(ctx, "Login Berhasil", gin.H{
+				"token": token,
 			})
 		}
 	}
@@ -73,17 +68,14 @@ func (uc *UserController) forgotPassword(ctx *gin.Context) {
 		var resetRequest *web.UserResetRequest
 		err := ctx.ShouldBindJSON(&resetRequest)
 		if err != nil {
-			utils.HandleBadRequest(ctx, err.Error())
+			getError := utils.CustomValidationErr(err)
+			utils.HandleBadRequest(ctx, "Validation error", getError)
 		} else {
-			err := uc.service.ForgotPassword(resetRequest)
+			getError, err := uc.service.ForgotPassword(resetRequest)
 			if err != nil {
-				utils.HandleNotFound(ctx, gin.H{
-					"message": "Email tidak ditemukan",
-				})
+				utils.HandleBadRequest(ctx, "Validation error", getError)
 			} else {
-				utils.HandleSuccess(ctx, gin.H{
-					"message": "Berhasil reset password, cek email",
-				})
+				utils.HandleSuccess(ctx, "Berhasil reset password, cek email", nil)
 			}
 		}
 	}
@@ -96,12 +88,11 @@ func (uc *UserController) changePassword(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&changePasswordRequest)
 	if err != nil {
-		utils.HandleBadRequest(ctx, err.Error())
+		getError := utils.CustomValidationErr(err)
+		utils.HandleBadRequest(ctx, "Validation error", getError)
 	} else {
 		uc.service.ChangePassword(userId, changePasswordRequest)
-		utils.HandleSuccess(ctx, gin.H{
-			"message": "Password berhasil diubah",
-		})
+		utils.HandleSuccess(ctx, "Password berhasil diubah", nil)
 	}
 }
 
@@ -111,17 +102,14 @@ func (uc *UserController) updateUser(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&userUpdateRequest)
 	if err != nil {
-		utils.HandleBadRequest(ctx, err.Error())
+		getError := utils.CustomValidationErr(err)
+		utils.HandleBadRequest(ctx, "Validation error", getError)
 	} else {
-		err := uc.service.UpdateUser(userId, userUpdateRequest)
+		getError, err := uc.service.UpdateUser(userId, userUpdateRequest)
 		if err != nil {
-			utils.HandleBadRequest(ctx, gin.H{
-				"message": err.Error(),
-			})
+			utils.HandleBadRequest(ctx, "Validation error", getError)
 		} else {
-			utils.HandleSuccess(ctx, gin.H{
-				"message": "User berhasil diupdate",
-			})
+			utils.HandleSuccess(ctx, "User berhasil diupdate", nil)
 		}
 	}
 }
@@ -132,17 +120,14 @@ func (uc *UserController) updateAvatar(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&avatarUpdateRequest)
 	if err != nil {
-		utils.HandleBadRequest(ctx, err.Error())
+		getError := utils.CustomValidationErr(err)
+		utils.HandleBadRequest(ctx, "Validation error", getError)
 	} else {
-		err := uc.service.UpdateAvatar(userId, avatarUpdateRequest)
+		getError, err := uc.service.UpdateAvatar(userId, avatarUpdateRequest)
 		if err != nil {
-			utils.HandleBadRequest(ctx, gin.H{
-				"message": "format gambar tidak valid",
-			})
+			utils.HandleBadRequest(ctx, "Validation Error", getError)
 		} else {
-			utils.HandleSuccess(ctx, gin.H{
-				"message": "avatar berhasil diupload",
-			})
+			utils.HandleSuccess(ctx, "avatar berhasil diupload", nil)
 		}
 	}
 }

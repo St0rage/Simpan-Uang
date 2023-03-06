@@ -53,6 +53,9 @@
                         "balance": {
                           "type": "integer",
                           "format": "int32"
+                        },
+                        "avatar": {
+                          "type": "string"
                         }
                       }
                     }
@@ -73,7 +76,7 @@
         ],
         "tags": ["User"],
         "summary": "Register User",
-        "description": "User registration",
+        "description": "User registration, first user created is admin",
         "requestBody": {
           "required": true,
           "content": {
@@ -656,7 +659,7 @@
         }
       }
     },
-    "/piggy-bank/{piggyBankId}/transactions/{piggyBankTranscationId}/delete": {
+    "/piggy-bank/{piggyBankId}/transactions/{piggyBankTransactionId}/delete": {
       "delete": {
         "security": [
           {
@@ -1009,7 +1012,7 @@
         }
       }
     },
-    "/wishlist/{wishlistId}/transactions/{wishlistTranscationId}/delete": {
+    "/wishlist/{wishlistId}/transactions/{wishlistTransactionId}/delete": {
       "delete": {
         "security": [
           {

@@ -10,10 +10,10 @@ import (
 )
 
 type PiggyBankService interface {
-	CreatePiggyBank(userId string, newPiggyBank *web.PiggyBankCreateUpdateRequest) error
+	CreatePiggyBank(userId string, newPiggyBank *web.PiggyBankCreateUpdateRequest) (map[string]string, error)
 	GetAllPiggyBank(userId string) []web.PiggyBankReponse
 	GetPiggyBankById(piggyBankId string) web.PiggyBankReponse
-	UpdatePiggyBank(piggyBankId string, piggyBankUpdate *web.PiggyBankCreateUpdateRequest) error
+	UpdatePiggyBank(piggyBankId string, piggyBankUpdate *web.PiggyBankCreateUpdateRequest) (map[string]string, error)
 	DeletePiggyBank(userId string, piggyBankId string) error
 	GetMainPiggyBank(userId string) string
 	GetPiggyBankUser(piggyBankId string) (string, error)
@@ -25,15 +25,17 @@ type piggyBankService struct {
 	piggyBankTransService PiggyBankTransactionService
 }
 
-func (piggyBankservice *piggyBankService) CreatePiggyBank(userId string, newPiggyBank *web.PiggyBankCreateUpdateRequest) error {
+func (piggyBankservice *piggyBankService) CreatePiggyBank(userId string, newPiggyBank *web.PiggyBankCreateUpdateRequest) (map[string]string, error) {
 	var piggyBank domain.PiggyBank
 
-	isMainPiggyBank := piggyBankservice.piggyBankRepo.CheckMainPiggyBank(userId)
-	if isMainPiggyBank {
+	isMainPiggyBankExist := piggyBankservice.piggyBankRepo.CheckMainPiggyBank(userId)
+	if isMainPiggyBankExist {
 
 		isPiggyBankNameExist := piggyBankservice.piggyBankRepo.CheckPiggyBankName(newPiggyBank.PiggyBankName, userId)
 		if isPiggyBankNameExist {
-			return errors.New("nama tabungan sudah digunakan")
+			return map[string]string{
+				"piggy_bank_name": "Nama tabungan sudah digunakan",
+			}, errors.New("error")
 		}
 
 		piggyBank.Type = false
@@ -48,7 +50,7 @@ func (piggyBankservice *piggyBankService) CreatePiggyBank(userId string, newPigg
 
 	piggyBankservice.piggyBankRepo.Save(&piggyBank)
 
-	return nil
+	return nil, nil
 }
 
 func (piggyBankService *piggyBankService) GetAllPiggyBank(userId string) []web.PiggyBankReponse {
@@ -81,19 +83,21 @@ func (piggyBankService *piggyBankService) GetPiggyBankById(piggyBankId string) w
 	return piggyBankResponse
 }
 
-func (piggyBankService *piggyBankService) UpdatePiggyBank(piggyBankId string, piggyBankUpdate *web.PiggyBankCreateUpdateRequest) error {
+func (piggyBankService *piggyBankService) UpdatePiggyBank(piggyBankId string, piggyBankUpdate *web.PiggyBankCreateUpdateRequest) (map[string]string, error) {
 	piggyBank := piggyBankService.piggyBankRepo.FindById(piggyBankId)
 
 	exist := piggyBankService.piggyBankRepo.CheckPiggyBankName(piggyBankUpdate.PiggyBankName, piggyBank.UserId)
 	if exist {
-		return errors.New("nama tabungan sudah digunakan")
+		return map[string]string{
+			"piggy_bank_name": "Nama tabungan sudah digunakan",
+		}, errors.New("error")
 	} else {
 		piggyBank.PiggyBankName = piggyBankUpdate.PiggyBankName
 	}
 
 	piggyBankService.piggyBankRepo.Update(&piggyBank)
 
-	return nil
+	return nil, nil
 }
 
 func (piggyBankService *piggyBankService) DeletePiggyBank(userId string, piggyBankId string) error {

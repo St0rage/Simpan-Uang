@@ -15,7 +15,7 @@ const (
 
 	// PIGGY BANK
 	INSERT_PIGGY_BANK         = "INSERT INTO piggy_bank (id, user_id, piggy_bank_name, type) VALUES (:id, :user_id, :piggy_bank_name, :type)"
-	SELECT_PIGGY_BANK         = "SELECT * FROM piggy_bank WHERE user_id = $1"
+	SELECT_PIGGY_BANK         = "SELECT * FROM piggy_bank WHERE user_id = $1 ORDER BY type DESC"
 	SELECT_PIGGY_BANK_ID      = "SELECT * FROM piggy_bank WHERE id = $1"
 	SELECT_MAIN_PIGGY_BANK    = "SELECT id FROM piggy_bank WHERE type = true AND user_id = $1"
 	UPDATE_PIGGY_BANK         = "UPDATE piggy_bank SET piggy_bank_name = :piggy_bank_name WHERE id = :id"
@@ -33,7 +33,7 @@ const (
 
 	// WHISLIST
 	INSERT_WISHLIST    = "INSERT INTO wishlist (id, user_id, wishlist_name, wishlist_target) VALUES (:id, :user_id, :wishlist_name, :wishlist_target)"
-	SELECT_WISHLIST    = "SELECT * FROM wishlist WHERE user_id = $1"
+	SELECT_WISHLIST    = "SELECT * FROM wishlist WHERE user_id = $1 ORDER BY id ASC"
 	SELECT_WISHLIST_ID = "SELECT * FROM wishlist WHERE id = $1"
 
 	UPDATE_WISHLIST                  = "UPDATE wishlist SET wishlist_name = :wishlist_name, wishlist_target = :wishlist_target WHERE id = :id"

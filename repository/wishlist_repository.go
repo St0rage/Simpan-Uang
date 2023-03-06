@@ -7,10 +7,10 @@ import (
 )
 
 type WishlistRepository interface {
-	GetAll(userId string) ([]domain.Wishlist, error)
+	GetAll(userId string) []domain.Wishlist
 	FindById(wishlistId string) domain.Wishlist
 	Update(wishlist *domain.Wishlist)
-	CreateNewWishlist(wishlistName domain.Wishlist) error
+	CreateNewWishlist(wishlistName domain.Wishlist)
 	CheckWishlistName(wishlistName string, userId string) bool
 	CheckWishlistUser(wishlistId string) (string, error)
 	GetTarget(wishlistId string) float32
@@ -21,13 +21,12 @@ type wishlistRepository struct {
 	db *sqlx.DB
 }
 
-func (w *wishlistRepository) GetAll(userId string) ([]domain.Wishlist, error) {
+func (w *wishlistRepository) GetAll(userId string) []domain.Wishlist {
 	var wishlists []domain.Wishlist
 	err := w.db.Select(&wishlists, utils.SELECT_WISHLIST, userId)
-	if err != nil {
-		return nil, err
-	}
-	return wishlists, nil
+	utils.PanicIfError(err)
+
+	return wishlists
 }
 
 func (w *wishlistRepository) CheckWishlistName(wishlistName string, userId string) bool {
@@ -61,14 +60,13 @@ func (w *wishlistRepository) Update(wishlist *domain.Wishlist) {
 	}
 }
 
-func (w *wishlistRepository) CreateNewWishlist(wishlistName domain.Wishlist) error {
+func (w *wishlistRepository) CreateNewWishlist(wishlistName domain.Wishlist) {
 	_, err := w.db.NamedExec(utils.INSERT_WISHLIST, wishlistName)
-	if err != nil {
-		return err
-	}
-	return nil
+	utils.PanicIfError(err)
+
 }
 
+// Middleware Authorization
 func (w *wishlistRepository) CheckWishlistUser(wishlistId string) (string, error) {
 	var userId string
 	err := w.db.Get(&userId, utils.SELECT_WISHLIST_USER_ID, wishlistId)
@@ -82,9 +80,8 @@ func (w *wishlistRepository) CheckWishlistUser(wishlistId string) (string, error
 func (w *wishlistRepository) GetTarget(wishlistId string) float32 {
 	var wishlistTarget float32
 	err := w.db.Get(&wishlistTarget, utils.SELECT_WISHLIST_TARGET, wishlistId)
-	if err != nil {
-		panic(err)
-	}
+	utils.PanicIfError(err)
+
 	return wishlistTarget
 }
 func (w *wishlistRepository) Delete(wishlistId string) {

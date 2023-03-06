@@ -30,6 +30,9 @@ func (server *Server) initController() {
 	// Middleware
 	authMdw := middleware.NewAuthMiddleware(server.tokenServ, server.serviceManager.PiggyBankService(), server.serviceManager.WishlistService())
 
+	// No Route
+	server.engine.NoRoute(func(ctx *gin.Context) { utils.HandleNotFound(ctx, nil) })
+
 	// Serve Image
 	server.engine.Static("api/user/resources/avatar", "./resources/avatar")
 

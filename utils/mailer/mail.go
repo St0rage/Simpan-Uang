@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/St0rage/Simpan-Uang/config"
+	"github.com/St0rage/Simpan-Uang/utils"
 	"gopkg.in/gomail.v2"
 )
 
@@ -32,10 +33,8 @@ func (m *mailService) ResetPasswordMail(email string, password string) error {
 	port, _ := strconv.Atoi(m.cfg.MailPort)
 	dialer := gomail.NewDialer(m.cfg.MailHost, port, m.cfg.MailUsername, m.cfg.MailPassword)
 
-	if err := dialer.DialAndSend(mailer); err != nil {
-		// return err
-		panic(err)
-	}
+	err := dialer.DialAndSend(mailer)
+	utils.PanicIfError(err)
 
 	return nil
 }

@@ -19,14 +19,14 @@ type AuthMiddleware interface {
 type authMiddleware struct {
 	tokenServ        authenticator.AccessToken
 	piggyBankService service.PiggyBankService
-	wishlistService service.WishlistService
+	wishlistService  service.WishlistService
 }
 
 func NewAuthMiddleware(tokenServ authenticator.AccessToken, piggyBankService service.PiggyBankService, wishlistService service.WishlistService) AuthMiddleware {
 	return &authMiddleware{
 		tokenServ:        tokenServ,
 		piggyBankService: piggyBankService,
-		wishlistService: wishlistService,
+		wishlistService:  wishlistService,
 	}
 }
 
@@ -39,7 +39,6 @@ func (auth *authMiddleware) RequireToken() gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(401, utils.ResponseWrapper{
 				Code:   401,
 				Status: "UNAUTHORIZED",
-				Data:   nil,
 			})
 			return
 		}
@@ -49,7 +48,6 @@ func (auth *authMiddleware) RequireToken() gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(401, utils.ResponseWrapper{
 				Code:   401,
 				Status: "UNAUTHORIZED",
-				Data:   nil,
 			})
 			return
 		}
@@ -63,7 +61,6 @@ func (auth *authMiddleware) RequireToken() gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(401, utils.ResponseWrapper{
 				Code:   401,
 				Status: "UNAUTHORIZED",
-				Data:   nil,
 			})
 			return
 		}
@@ -80,7 +77,6 @@ func (auth *authMiddleware) PiggyBankAuthorization() gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(404, utils.ResponseWrapper{
 				Code:   404,
 				Status: "NOT FOUND",
-				Data:   nil,
 			})
 			return
 		}
@@ -91,7 +87,6 @@ func (auth *authMiddleware) PiggyBankAuthorization() gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(404, utils.ResponseWrapper{
 				Code:   404,
 				Status: "NOT FOUND",
-				Data:   nil,
 			})
 			return
 		}
@@ -109,7 +104,6 @@ func (auth *authMiddleware) WishlistAuthorization() gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(404, utils.ResponseWrapper{
 				Code:   404,
 				Status: "NOT FOUND",
-				Data:   nil,
 			})
 			return
 		}
@@ -120,7 +114,6 @@ func (auth *authMiddleware) WishlistAuthorization() gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(404, utils.ResponseWrapper{
 				Code:   404,
 				Status: "NOT FOUND",
-				Data:   nil,
 			})
 			return
 		}
