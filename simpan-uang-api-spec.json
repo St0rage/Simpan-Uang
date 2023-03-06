@@ -35,29 +35,14 @@
                     "status": {
                       "type": "string"
                     },
+                    "message": {
+                      "type": "string"
+                    },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "email": {
-                          "type": "string"
-                        },
-                        "is_admin": {
-                          "type": "boolean"
-                        },
-                        "balance": {
-                          "type": "integer",
-                          "format": "int32"
-                        },
-                        "avatar": {
-                          "type": "string"
-                        }
-                      }
+                      "$ref": "#/components/schemas/User"
+                    },
+                    "errors": {
+                      "type": "object"
                     }
                   }
                 }
@@ -157,16 +142,19 @@
                     "status": {
                       "type": "string"
                     },
+                    "message": {
+                      "type": "string"
+                    },
                     "data": {
                       "type": "object",
                       "properties": {
-                        "message": {
-                          "type": "string"
-                        },
                         "token": {
                           "type": "string"
                         }
                       }
+                    },
+                    "errors": {
+                      "type": "object"
                     }
                   }
                 }
@@ -362,8 +350,14 @@
                     "status": {
                       "type": "string"
                     },
+                    "message": {
+                      "type": "string"
+                    },
                     "data": {
                       "$ref": "#/components/schemas/PiggyBankList"
+                    },
+                    "errors": {
+                      "type": "object"
                     }
                   }
                 }
@@ -402,8 +396,14 @@
                     "status": {
                       "type": "string"
                     },
+                    "message": {
+                      "type": "string"
+                    },
                     "data": {
                       "$ref": "#/components/schemas/PiggyBank"
+                    },
+                    "errors": {
+                      "type": "object"
                     }
                   }
                 }
@@ -445,31 +445,14 @@
                     "status": {
                       "type": "string"
                     },
+                    "message": {
+                      "type": "string"
+                    },
                     "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "piggy_bank_id": {
-                            "type": "string"
-                          },
-                          "transcation_name": {
-                            "type": "string"
-                          },
-                          "amount": {
-                            "type": "number"
-                          },
-                          "status": {
-                            "type": "boolean"
-                          },
-                          "date": {
-                            "type": "integer"
-                          }
-                        }
-                      }
+                      "$ref": "#/components/schemas/PiggyBankTransactions"
+                    },
+                    "errors": {
+                      "type": "object"
                     }
                   }
                 }
@@ -715,8 +698,14 @@
                     "status": {
                       "type": "string"
                     },
+                    "message": {
+                      "type": "string"
+                    },
                     "data": {
                       "$ref": "#/components/schemas/Wishlists"
+                    },
+                    "errors": {
+                      "type": "object"
                     }
                   }
                 }
@@ -755,8 +744,14 @@
                     "status": {
                       "type": "string"
                     },
+                    "message": {
+                      "type": "string"
+                    },
                     "data": {
                       "$ref": "#/components/schemas/Wishlist"
+                    },
+                    "errors": {
+                      "type": "object"
                     }
                   }
                 }
@@ -798,31 +793,14 @@
                     "status": {
                       "type": "string"
                     },
+                    "message": {
+                      "type": "string"
+                    },
                     "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "wishlist_id": {
-                            "type": "string"
-                          },
-                          "transcation_name": {
-                            "type": "string"
-                          },
-                          "amount": {
-                            "type": "number"
-                          },
-                          "status": {
-                            "type": "boolean"
-                          },
-                          "date": {
-                            "type": "integer"
-                          }
-                        }
-                      }
+                      "$ref": "#/components/schemas/WishlistTransactions"
+                    },
+                    "errors": {
+                      "type": "object"
                     }
                   }
                 }
@@ -1111,13 +1089,38 @@
           "status": {
             "type": "string"
           },
+          "message": {
+            "type": "string"
+          },
           "data": {
-            "type": "object",
-            "properties": {
-              "message": {
-                "type": "string"
-              }
-            }
+            "type": "object"
+          },
+          "errors": {
+            "type": "object"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "is_admin": {
+            "type": "boolean"
+          },
+          "balance": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "avatar": {
+            "type": "string"
           }
         }
       },
@@ -1145,6 +1148,32 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/PiggyBank"
+        }
+      },
+      "PiggyBankTransactions": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "piggy_bank_id": {
+              "type": "string"
+            },
+            "transcation_name": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "number"
+            },
+            "status": {
+              "type": "boolean"
+            },
+            "date": {
+              "type": "integer"
+            }
+          }
         }
       },
       "CreateOrUpdatePiggyBank": {
@@ -1203,6 +1232,32 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/Wishlist"
+        }
+      },
+      "WishlistTransactions": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "wishlist_id": {
+              "type": "string"
+            },
+            "transcation_name": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "number"
+            },
+            "status": {
+              "type": "boolean"
+            },
+            "date": {
+              "type": "integer"
+            }
+          }
         }
       },
       "CreateOrUpdateWishlist": {
